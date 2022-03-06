@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+//Modifica fatta da RINGHIO 18:54
+
 int main (int argc , char **argv){
     if(argc!=2) {printf("inserire (solo) il numero di elementi della matrice quadrata."); return -1;}
     int N=atoi(argv[1]);
