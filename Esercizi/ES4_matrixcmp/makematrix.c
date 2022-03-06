@@ -33,7 +33,7 @@ int main (int argc , char **argv){
             fwrite(&M1[i][j],sizeof(float),1,bin);
             fprintf(txt,"%s ",buffer);
         }
-        //fprintf(txt,"\n");
+        fprintf(txt,"\n");
     }
     printf("fine scrittura.\n");
 
