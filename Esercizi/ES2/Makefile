@@ -11,7 +11,7 @@ my_lib.a: func_set1.o
 	ar rvs libmy_lib.a func_set1.o
 
 main.o: my_lib.a
-	$(CC) $(CFLAGS) main.c -L. -lmy_lib -o main.o
+	$(CC) $(CFLAGS) mystrcat.c -L. -lmy_lib -o main.o
 
 .PHONY: test1 test2 cleanall
 
