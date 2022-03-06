@@ -3,6 +3,7 @@
 #include <string.h>
 
 //Modifica fatta da RINGHIO 18:54
+//Modifica fatta da T430 18:57
 
 int main (int argc , char **argv){
     if(argc!=2) {printf("inserire (solo) il numero di elementi della matrice quadrata."); return -1;}
