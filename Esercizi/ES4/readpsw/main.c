@@ -22,7 +22,7 @@ int main(int argc, char **argv){
         tok = strchr(line,':');
         //printf("line: %s",line);
         *tok = '\0';
-        //printf("line dopo: %s\n",line);
+        printf("line dopo: %s\n",line);
         strcat(line,"\n");
         fputs(line,ofp);
         
