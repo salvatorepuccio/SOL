@@ -27,10 +27,11 @@ int main (int argc , char **argv){
     printf("Scrittura\n");
     for(int i=0;i<N;i++){
         for(int j=0;j<N;j++){
-            printf("scrivo %.2f\n",M1[i][j]);
+            //printf("scrivo %.2f\n",M1[i][j]);
+            fwrite(&M1[i][j],sizeof(float),1,bin);
+            
             char buffer[10];
             snprintf(buffer, sizeof buffer, "%.1f",M1[i][j]);
-            fwrite(&M1[i][j],sizeof(float),1,bin);
             fprintf(txt,"%s ",buffer);
         }
         fprintf(txt,"\n");
@@ -41,7 +42,7 @@ int main (int argc , char **argv){
     fclose(txt);
     free(M1);
     
-//
+
 
     return 0;
 }
