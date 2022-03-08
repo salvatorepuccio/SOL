@@ -87,4 +87,28 @@ void main(){
 
 
 
+
+    //
+    //
+    //
+    //eseguire un file eseguibile
+    execl("/mnt/d/SOL/Esercizi/ES4/main.o","","5",NULL);
+    //primo parametro il path, che puo' essere anche relativo con execlp
+    //secondo parametro sarebbe argv[0] quindi 
+    //./main.o primo secondo diventa execl("path/main.o,"","primo","secondo")
+    //   [0    ,  1  ,  2   ]                           [0 ,   1   ,    2   ]
+    //NULL indica che sono finiti i parametri
+
+    //
+    //
+    //eseguire un programma in background (da bash)
+    //   ./nomeprog.o &
+    //basta aggiungere l'&
+
+
+
+
+
+
+
 }
