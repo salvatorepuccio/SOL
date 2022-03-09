@@ -105,6 +105,31 @@ void main(){
     //   ./nomeprog.o &
     //basta aggiungere l'&
 
+    //
+    //
+    //
+    //ricorsione con fork e waitpid
+    while(1){
+        if(2/*condizione di fine ciclo*/){
+            //fai qualcosa
+            break;
+        }
+        else{
+            //genera un nuovo figlio che continua
+            int pid =fork();
+            waitpid(pid,NULL,0);
+            if(pid>0){
+                //padre
+                //cosa deve fare il padre quando il figlio ha finito?
+                //di solito qualcosa e poi break;
+            }
+            if(pid==0){
+                //figlio
+                //in questo caso probabilmente continuera' il ciclo, quindi non serve questo if
+            }
+        }
+    }
+
 
 
 
