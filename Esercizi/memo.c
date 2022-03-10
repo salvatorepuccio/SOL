@@ -4,6 +4,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <stdbool.h>
 
 
 
@@ -132,8 +133,35 @@ void main(){
 
 
 
-
-
-
-
 }
+
+
+    //
+    //
+    //
+    //thread
+    //creare 10 thread che fanno la stessa cosa e poi uscire
+    static void* myfun (void* arg){
+        //fa qualcosa
+        pthread_exit((void*)17);
+        //o return 0;
+    }
+
+    int main2(){
+        pthread_t tid[10];
+        int i=0,status,err;
+        while(true){
+        if((err=pthread_create(&tid[i],NULL, &myfun,(void*)i))!=0){
+            //gestisci errore
+            perror("creazione thread");exit(EXIT_FAILURE);
+        }
+        else{
+            //creato correttamente
+            printf("[] creato thread %d\n",i);
+            i++;
+        }
+        if(i==10) break;
+    }
+
+    for(int j=0;j<10;j++){ pthread_join(tid[j],(void*) &status);}
+    }
