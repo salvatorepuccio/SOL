@@ -16,9 +16,11 @@ static int x;
 
 static void* rand_num_gen(void* arg){
     srand(time(NULL));
-    sleep((rand()%5)+1);
-    int r = rand()%100;
-    printf("sono il thread %d e ho generato %d\n",arg,r);
+    //sleep((rand()%5)+1);
+    //int r = rand()%100;
+    int x_vecchio = x;
+    x++;
+    printf("[%d]: modifico %d in --> %d\n",arg,x_vecchio,x);
     //pthread_exit((void*)r);
     return 0;
 }
@@ -51,7 +53,7 @@ int main(){
             //creato correttamente
             printf("[] creato thread %d\n",i);
             i++;
-            sleep(3);
+            //sleep(3);
             // printf("i prima di join: %d\n",i);
             // pthread_join(tid,(void*) &status);
             // printf("i dopo di join: %d\n",i);
@@ -60,7 +62,7 @@ int main(){
         if(i==10) break;
     }
 
-    for(int j=0;j<10;j++){ pthread_join(tid[j],(void*) &status);printf("terminato\n");}
+    for(int j=0;j<10;j++){ pthread_join(tid[j],(void*) &status);/*printf("terminato\n");*/}
 
 
     return 0;
