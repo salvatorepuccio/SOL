@@ -52,28 +52,25 @@ static void* my_cons(void* arg){
     }
         return (void*)0;
 }
-
 int main(int argc, char *argv[]){
     if(argc!=2){perror("inserire quanti elementi produrre");exit(EXIT_FAILURE);}
     pthread_t cons,prod;
     int err1,err2,status1,status2;
 
+
+    //crea produttore--------------------------------------------
     if((err1=pthread_create(&prod,NULL,&my_prod,argv[1]))!=0){
-        //gestisci errore
         perror("creazione produttore");exit(EXIT_FAILURE);
     }
     else{
-        //creato correttamente
         printf("[] creato produttore\n");
     }
 
-    //
+    //crea consumatore---------------------------------------------
     if((err2=pthread_create(&cons,NULL,&my_cons,argv[1]))!=0){
-        //gestisci errore
         perror("creazione consumatore");exit(EXIT_FAILURE);
     }
     else{
-        //creato correttamente
         printf("[] creato consumatore\n");
     }
     //sleep(10);
