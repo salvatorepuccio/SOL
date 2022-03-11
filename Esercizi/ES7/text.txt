@@ -1,0 +1,8 @@
+programma C che implementa una pipeline 
+di tre threads. Il primo thread legge una 
+riga alla volta da un file testuale (il cui 
+nome e' passato come argomento al programma) ed invia 
+al secondo thread ogni riga 
+letta dal file. Il secondo thread “tokenizza” le 
+parole dalla riga ricevuta dal primo thread 
+(considerare come separatore solo lo spazio) e
