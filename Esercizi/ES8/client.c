@@ -38,14 +38,18 @@ void func(int sockfd)
 	int n;
 	for (;;) {
 		bzero(buff, sizeof(buff));
-		printf("Enter the string : ");
+		printf("Inserire un'operazione aritmentica: ");
 		n = 0;
 		while ((buff[n++] = getchar()) != '\n')
 			;
 		write(sockfd, buff, sizeof(buff));
+		if (strncmp("quit", buff, 4) == 0) {
+			printf("quit.\n");
+			break;
+		}
 		bzero(buff, sizeof(buff));
 		read(sockfd, buff, sizeof(buff));
-		printf("From Server : %s", buff);
+		printf("Risultato : %s", buff);
 		if ((strncmp(buff, "exit", 4)) == 0) {
 			printf("Client Exit...\n");
 			break;
@@ -83,10 +87,6 @@ int main(){
 	}
 	else
 		printf("connected to the server..\n");
-
-		
-
-	
 
 	// function for chat
 	func(sockfd);

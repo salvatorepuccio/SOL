@@ -34,6 +34,32 @@ void main(){
     //
     //
     //
+    //aprire file in scrittura, cancellandolo se esiste gia' creandolo se non esiste
+    //system call syscall sc
+    FILE *output;
+    if(( output = open("./output.txt",O_WRONLY | O_APPEND | O_CREAT,0644)) == -1) {
+        //la open returna il file descriptor, se il file non esiste verra' creato
+            perror("in apertura/creazione");
+            exit(EXIT_FAILURE); /* termina */
+    }
+    //libreria
+    if( (output = fopen("./passwd.txt","w+"))==NULL){
+        perror("errore apertura file");
+    }
+
+
+    //
+    //
+    //
+    //come leggere quanto scritto da tastiera fino ad "a capo"
+    char buff[128];
+    int n=0;
+    while ((buff[n++] = getchar()) != '\n')
+		;
+
+    //
+    //
+    //
     //copiare un file in un altro (duplicare)
     //inizio lettura
     int nread=-1;
@@ -46,6 +72,20 @@ void main(){
         }
     }
     if(nread==-1){perror("lettura");exit(EXIT_FAILURE);}
+
+
+
+    //
+    //
+    //
+    //leggere una riga di un file txt
+    char *line=malloc(128);
+    
+    while(fgets(line,sizeof(line),fd)!=NULL){
+        //fare qualcosa con line ad esempio scriverla in un altro file
+        fputs(line,output);
+
+    }
 
     //
     //
