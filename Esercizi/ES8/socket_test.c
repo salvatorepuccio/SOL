@@ -8,3 +8,7 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <sys/un.h>
+
+int main(){
+    return 0;
+}
