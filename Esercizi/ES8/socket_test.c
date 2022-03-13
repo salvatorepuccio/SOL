@@ -10,5 +10,12 @@
 #include <sys/un.h>
 
 int main(){
+    int fd_skt, fd_c;
+    if(fork()!=0){
+        fd_skt = socket(AF_UNIX,SOCK_STREAM,0);
+    }
+    else{
+        fd_c=socket(AF_UNIX,SOCK_STREAM,0);
+    }
     return 0;
 }

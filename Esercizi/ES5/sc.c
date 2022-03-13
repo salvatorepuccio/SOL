@@ -6,11 +6,6 @@
 #include <unistd.h>
 #include <time.h>
 
-
-
-
-
-
 int main(int argc,char **argv){
     clock_t begin,end;
     double time_spent;
