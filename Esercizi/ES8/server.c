@@ -48,27 +48,25 @@ void func(int connfd)
 			//effettuo il calcolo
 			printf("eseguo comando\n");
 			buff[strcspn(buff, "\n")] = 0;
-			char *command = malloc(sizeof(buff)+25);
-			strcat(command,"echo ");
+			char *command = malloc(sizeof(buff)+27);
+			strcat(command,"echo \"");
 			strcat(command,buff);
-			strcat(command," | bc > ./output.txt");
+			strcat(command,"\" | bc > ./output.txt");
 			printf("Sto per eseguire questo: %s\n",command);
 			int res = system(command);
-			printf("sospetto\n");
-			if(fgets(line,128,fd_output)!=NULL){
-				printf("!=null");
-			}
-			else{
-				printf("==null");
-			}
-			printf("sospetto2\n");
-			ftruncate("./output.txt",0);
+			//fprintf(fd_output,"\n");
+			// if((line=gets(fd_output))==NULL){
+			// 	perror("errore nella lettura del risultato dal file");
+			// 	exit(EXIT_FAILURE);
+			// }
+			//ftruncate("./output.txt",0);
 			//rispondere
-
+			strcpy(line,"cazzzone\n");
 			// and send that buffer to client
 			printf("invio risposta\n");
 			write(connfd, line, sizeof(line));
 			bzero(line,sizeof(line));
+			bzero(buff,MAX);
 		}
 		
 	}
