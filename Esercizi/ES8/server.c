@@ -25,7 +25,7 @@ void func(int connfd)
 {
 	char buff[MAX];
 	int n;
-	int fd_output;
+	FILE *fd_output;
 	char *line=malloc(128);
     if( (fd_output = fopen("./o.txt","w"))==NULL){
         perror("errore apertura file");exit(EXIT_FAILURE);
@@ -33,6 +33,8 @@ void func(int connfd)
 	// infinite loop for chat
 	for (;;) {
 		bzero(buff, MAX);
+		bzero(line,sizeof(line));
+
 
 		// read the message from client and copy it in buffer
 		read(connfd, buff, sizeof(buff));
@@ -53,20 +55,17 @@ void func(int connfd)
 			strcat(command,buff);
 			strcat(command,"\" | bc > ./o.txt");
 			printf("Sto per eseguire questo: %s\n",command);
-			//int res = system(command);
-			fprintf(fd_output,"YEEEE\n"); 
-			// if((line=gets(fd_output))==NULL){
-			// 	perror("errore nella lettura del risultato dal file");
-			// 	exit(EXIT_FAILURE);
-			// }
+			int res = system(command);
+			if((fgets(line,128,fd_output))==NULL){
+				perror("lettura da o.txt");
+				exit(EXIT_FAILURE);
+			}
 			//ftruncate("./output.txt",0);
 			//rispondere
-			strcpy(line,"cazzzone\n");
+			//strcpy(line,"cazzzone\n");
 			// and send that buffer to client
 			printf("invio risposta\n");
 			write(connfd, line, sizeof(line));
-			bzero(line,sizeof(line));
-			bzero(buff,MAX);
 		}
 		
 	}
