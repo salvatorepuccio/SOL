@@ -27,7 +27,7 @@ void func(int connfd)
 	int n;
 	int fd_output;
 	char *line=malloc(128);
-    if( (fd_output = fopen("./output.txt","w"))==NULL){
+    if( (fd_output = fopen("./o.txt","w"))==NULL){
         perror("errore apertura file");exit(EXIT_FAILURE);
     }
 	// infinite loop for chat
@@ -51,7 +51,7 @@ void func(int connfd)
 			char *command = malloc(sizeof(buff)+27);
 			strcat(command,"echo \"");
 			strcat(command,buff);
-			strcat(command,"\" | bc > ./output.txt");
+			strcat(command,"\" | bc > ./o.txt");
 			printf("Sto per eseguire questo: %s\n",command);
 			//int res = system(command);
 			fprintf(fd_output,"YEEEE\n");
