@@ -54,7 +54,7 @@ void func(int connfd)
 			strcat(command,"\" | bc > ./o.txt");
 			printf("Sto per eseguire questo: %s\n",command);
 			//int res = system(command);
-			fprintf(fd_output,"YEEEE\n");
+			fprintf(fd_output,"YEEEE\n"); 
 			// if((line=gets(fd_output))==NULL){
 			// 	perror("errore nella lettura del risultato dal file");
 			// 	exit(EXIT_FAILURE);
