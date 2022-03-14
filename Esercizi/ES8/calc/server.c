@@ -27,13 +27,11 @@ void func(int connfd)
 	int n;
 	FILE *fd_output;
 	char *line=malloc(128);
-    if( (fd_output = fopen("./o.txt","w"))==NULL){
-        perror("errore apertura file");exit(EXIT_FAILURE);
-    }
+    
 	// infinite loop for chat
 	for (;;) {
 		bzero(buff, MAX);
-		bzero(line,sizeof(line));
+		bzero(line,128);
 
 
 		// read the message from client and copy it in buffer
@@ -56,15 +54,19 @@ void func(int connfd)
 			strcat(command,"\" | bc > ./o.txt");
 			printf("Sto per eseguire questo: %s\n",command);
 			int res = system(command);
+			if( (fd_output = fopen("./o.txt","r"))==NULL){
+        		perror("err apertura o.txt");exit(EXIT_FAILURE);
+    		}
 			if((fgets(line,128,fd_output))==NULL){
-				perror("lettura da o.txt");
-				exit(EXIT_FAILURE);
+				// perror("err lettura da o.txt");
+				// exit(EXIT_FAILURE);
+				strcpy(line,"\n");
 			}
 			//ftruncate("./output.txt",0);
 			//rispondere
 			//strcpy(line,"cazzzone\n");
 			// and send that buffer to client
-			printf("invio risposta\n");
+			printf("invio risposta: %s\n",line);
 			write(connfd, line, sizeof(line));
 		}
 		
