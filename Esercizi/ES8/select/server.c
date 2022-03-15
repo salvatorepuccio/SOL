@@ -82,8 +82,8 @@ int main (){
 
 	while (true) {
 		
-		read_ready_sockets=current_sockets;
-		write_ready_sockets=current_sockets;
+		//read_ready_sockets=current_sockets;
+		//write_ready_sockets=current_sockets;
 
 		//printf("fd_num: %d, fd_sk: %d\n",fd_num,fd_sk);
 
