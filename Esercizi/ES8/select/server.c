@@ -60,12 +60,14 @@ int main (){
 	strcpy(serv_sock_address.sun_path,SOCKNAME);
 
 	int flag = 1;  
-    if (-1 == setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof(flag))) {  
-        Perror("setsockopt fail");  
+    if (-1 == setsockopt(server_socket, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof(flag))) {  
+        perror("setsockopt fail");  
     }  
 
+	unlink(SOCKNAME);
+
 	if((bind(server_socket,(SA*)&serv_sock_address,sizeof(serv_sock_address))) !=0){
-		printf("socket bind fallita...\n");
+		perror("bind fallita...\n");
 		exit(EXIT_FAILURE);
 	}
 	else{
@@ -87,8 +89,8 @@ int main (){
 
 	while (true) {
 		
-		//read_ready_sockets=current_sockets;
-		//write_ready_sockets=current_sockets;
+		read_ready_sockets=current_sockets;
+		write_ready_sockets=current_sockets;
 
 		//printf("fd_num: %d, fd_sk: %d\n",fd_num,fd_sk);
 
@@ -108,18 +110,19 @@ int main (){
 					}
 					else {/* sock I/0 pronto */
 						read(fd,buf,N);
-						printf("Ricevuto: %s\n",buf);
+						
 						if(strncmp("quit",buf,4)==0){
 							FD_CLR(fd,&current_sockets);
 							close(fd);
 						}
 						else{
+							printf("Ricevuto: %s\n",buf);
 							FD_SET(fd,&write_ready_sockets);
 							strtoupper(buf,N,upper);
 						}
 					} 
 				}
-				else if(FD_ISSET(fd,&write_ready_sockets)){
+				if(FD_ISSET(fd,&write_ready_sockets)){
 					write(fd,upper,N);
 				}
 			} 
