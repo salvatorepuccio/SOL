@@ -24,10 +24,10 @@
 #define N 100
 #define UNIX_PATH_MAX 108
 
-struct sockaddr_un {
-	sa_family_t sun_family;
-	char sun_path[UNIX_PATH_MAX];
-};
+// struct sockaddr_un {
+// 	sa_family_t sun_family;
+// 	char sun_path[UNIX_PATH_MAX];
+// };
 
 // #define PORT 8080
 // #define SA struct sockaddr
@@ -110,118 +110,3 @@ int main (void){
 	run_server (&sa); /* attiv server */
 	return 0;
 }
-
-// void strtoupper(const char* in, size_t len, char* out){
-//     for(int i=0;i<len;i++){
-//         if(in[i]>96&&in[i]<123) 
-//             out[i]=in[i]-32; 
-//         else 
-//             out[i]=in[i];
-//     }
-// }
-
-
-// void* client_holder(void* arg){
-//     int n,toread;
-// 	char size[4];
-// 	client *cli=arg;
-//     char *upper=NULL,*buff=NULL;
-// 	// infinite loop for chat
-// 	for (;;) {
-		
-// 		// read the message from client and copy it in buffer
-// 		read(cli->connfd, size, 4);
-// 		toread = atoi(size);
-// 		//printf("Dimensione ricevuta: %d\n",toread);
-
-// 		buff = malloc(toread);
-// 		bzero(buff, toread);
-//         read(cli->connfd, buff, toread);
-
-// 		//printf("Stringa da client n %d: %s ",cli->id ,buff);
-
-//         if (strncmp("quit", buff, 4) == 0) {
-// 			printf("Disconnetto client %d\n",cli->id);
-// 			//sleep(2);
-// 			break;
-// 		}
-
-//         upper=malloc(toread);
-//         strtoupper(buff,toread,upper);
-// 		//printf("\nMando a client n %d: %s ",cli->id ,upper);
-// 		printf("Rispondo..\n");
-
-// 		// and send that buffer to client
-// 		write(cli->connfd, upper, toread);
-// 	}
-// 	return (void*)0;
-// }
-
-
-
-
-
-// int main()
-// {
-// 	int accept_socket, connfd, len,err,status,c_id=0;
-// 	struct sockaddr_in servaddr, cli;
-// 	pthread_t t1;
-
-// 	// socket create and verification
-// 	accept_socket = socket(AF_INET, SOCK_STREAM, 0);
-// 	if (accept_socket == -1) {
-// 		printf("socket creation failed...\n");
-// 		exit(0);
-// 	}
-// 	else
-// 		printf("Socket successfully created..\n");
-// 	bzero(&servaddr, sizeof(servaddr));
-
-// 	// assign IP, PORT
-// 	servaddr.sin_family = AF_INET;
-// 	servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
-// 	servaddr.sin_port = htons(PORT);
-
-// 	// Binding newly created socket to given IP and verification
-// 	if ((bind(accept_socket, (SA*)&servaddr, sizeof(servaddr))) != 0) {
-// 		printf("socket bind failed...\n");
-// 		exit(0);
-// 	}
-// 	else
-// 		printf("Socket successfully binded..\n");
-
-// 	for(;;){
-// 		// Now server is ready to listen and verification
-// 		if ((listen(accept_socket, 5)) != 0) {
-// 			printf("Listen failed...\n");
-// 			exit(0);
-// 		}
-// 		else
-// 			printf("Server listening..\n");
-// 		len = sizeof(cli);
-
-// 		// Accept the data packet from client and verification
-// 		connfd = accept(accept_socket, (SA*)&cli, &len);
-// 		if (connfd < 0) {
-// 			printf("server accept failed...\n");
-// 			exit(0);
-// 		}
-// 		else
-// 			printf("server accept the client %d\n",c_id);
-
-// 		// Function for chatting between client and server
-// 		//func(connfd);
-
-// 		client *c=malloc(sizeof(client*));
-// 		c->connfd=connfd;
-// 		c->id=c_id;
-
-// 		if((err=pthread_create(&t1,NULL,&client_holder,c))!=0){
-// 				//gestisci errore
-// 				perror("creazione thread");exit(EXIT_FAILURE);
-// 			}
-// 		c_id++;
-// 	}
-// 	// After chatting close the socket
-// 	close(accept_socket);
-//}
