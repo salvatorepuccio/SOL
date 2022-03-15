@@ -23,6 +23,7 @@
 #define SOCKNAME "./mysock"
 #define N 128
 #define SA struct sockaddr
+#define UNIX_PATH_MAX 108
 
 
 void strtoupper(const char* in, size_t len, char* out){
