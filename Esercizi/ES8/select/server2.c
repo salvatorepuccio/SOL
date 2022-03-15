@@ -1,10 +1,4 @@
-//Realizzare un programma C che implementa un server che rimane sempre attivo in attesa di richieste da parte di 
-//uno o piu' processi client su una socket di tipo AF_UNIX. Ogni client richiede al server la trasformazione di 
-//tutti i caratteri di una stringa da minuscoli a maiuscoli (es. ciao –> CIAO). 
-//Per ogni nuova connessione il server lancia un thread POSIX che gestisce tutte le richieste del client 
-//(modello “un thread per connessione” – i thread sono spawnati in modalità detached) e quindi termina la sua 
-//esecuzione quando il client chiude la connessione.
-//Per testare il programma, lanciare piu' processi client ognuno dei quali invia una o piu' richieste al server multithreaded.
+//esempio dalle slide di server multi connessione con select
 
 #include <stdio.h>
 #include <netdb.h>
@@ -19,13 +13,21 @@
 #include <time.h>
 #include <netinet/in.h>
 #include <pthread.h>
+#include <stdbool.h>
 //nuovo
 #include <sys/select.h>
+#include <sys/un.h>
+#include <errno.h>
 
 
- /* ind AF_UNIX */
-#define SOCKNAME ”./mysock"
+#define SOCKNAME "./mysock"
 #define N 100
+#define UNIX_PATH_MAX 108
+
+struct sockaddr_un {
+	sa_family_t sun_family;
+	char sun_path[UNIX_PATH_MAX];
+};
 
 // #define PORT 8080
 // #define SA struct sockaddr
@@ -68,8 +70,8 @@ static void run_server(struct sockaddr * psa) {
 							close(fd); 
 						}
 						else { /* nread !=0 */
-							printf(”Server got: %s\n”,buf) ;
-							write(fd,”Bye!”,5);
+							printf("Server got: %s\n",buf) ;
+							write(fd,"Bye!",5);
 						}
 					} 
 				} 
@@ -86,7 +88,7 @@ static void run_client(struct sockaddr * psa) {
 		int fd_skt; char buf[N];
 		fd_skt=socket(AF_UNIX,SOCK_STREAM,0);
 		while (connect(fd_skt,(struct sockaddr*)psa,sizeof(*psa)) == -1 ) {
-			if ( errno == ENOENT ) sleep(1);
+			if (errno == ENOENT) sleep(1);
 			else exit(EXIT_FAILURE); 
 		}
 		write(fd_skt,"Hallo!",7);
@@ -100,7 +102,8 @@ static void run_client(struct sockaddr * psa) {
 
 
 int main (void){
-	int i; struct sockaddr_un sa;
+	int i; 
+	struct sockaddr_un sa;
 	sa.sun_family=AF_UNIX;
 	for(i=0; i< 4; i++)
 	run_client(&sa); /* attiv client*/
@@ -221,4 +224,4 @@ int main (void){
 // 	}
 // 	// After chatting close the socket
 // 	close(accept_socket);
-}
+//}
