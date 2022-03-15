@@ -90,11 +90,11 @@ int main (){
 	while (true) {
 		
 		read_ready_sockets=current_sockets;
-		write_ready_sockets=current_sockets;
+		//write_ready_sockets=current_sockets;
 
 		//printf("fd_num: %d, fd_sk: %d\n",fd_num,fd_sk);
 
-		if ((ret_select=select(FD_SETSIZE,&read_ready_sockets,&write_ready_sockets,NULL,NULL))<0) {
+		if ((ret_select=select(FD_SETSIZE,&read_ready_sockets,NULL,NULL,NULL))<0) {
 			perror("select");
 			exit(EXIT_FAILURE); 
 		}
@@ -110,7 +110,6 @@ int main (){
 					}
 					else {/* sock I/0 pronto */
 						read(fd,buf,N);
-						
 						if(strncmp("quit",buf,4)==0){
 							FD_CLR(fd,&current_sockets);
 							close(fd);
@@ -119,12 +118,17 @@ int main (){
 							printf("Ricevuto: %s\n",buf);
 							FD_SET(fd,&write_ready_sockets);
 							strtoupper(buf,N,upper);
+							//printf("upper: %s\n",upper);
+							write(fd,upper,N);
 						}
 					} 
 				}
-				if(FD_ISSET(fd,&write_ready_sockets)){
-					write(fd,upper,N);
-				}
+				// else if(FD_ISSET(fd,&write_ready_sockets)){
+				// 	if(fd!=server_socket){
+				// 		printf("mando %s\n",upper);
+				// 		write(fd,upper,N);
+				// 	}
+				// }
 			} 
 		} 
 	} 
