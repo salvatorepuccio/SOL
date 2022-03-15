@@ -10,11 +10,15 @@
 #include <time.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+//nuovo
+#include <sys/select.h>
+#include <sys/un.h>
+#include <errno.h>
 
-#define PORT 8080
+#define SOCKNAME "./mysock"
+#define UNIX_PATH_MAX 108
+#define PORT 9999
 #define SA struct sockaddr
-
-
 
 void func(int sockfd){
 	
@@ -26,29 +30,31 @@ void func(int sockfd){
 		printf("Inserisci la stringa : ");
 		n = 0;
 		while ((buff[n++] = getchar()) != '\n'){
-            if(n>=dim){
-                //allargo
-				//printf("allargo\n");
-                buff2=malloc(dim*2);
-                strcpy(buff2,buff);
-                temp = buff;
-                buff = buff2;
-                free(temp);temp=NULL;
-                dim = dim*2;
-            }
+            // if(n>=dim){
+            //     //allargo
+			// 	//printf("allargo\n");
+            //     buff2=malloc(dim*2);
+            //     strcpy(buff2,buff);
+            //     temp = buff;
+            //     buff = buff2;
+            //     free(temp);temp=NULL;
+            //     dim = dim*2;
+            // }
+			;
         }
 
-		//printf("Hai scritto questo: %s\n",buff);
+		printf("Mando: %s\n",buff);
 
 
-		realdim = strlen(buff);
-		char realdim_char[4];
-		sprintf(realdim_char,"%d",realdim);
-		//printf("Mando la dimensione al server: %s\n",realdim_char);
-		write(sockfd,realdim_char,4);
+		// realdim = strlen(buff);
+		// char realdim_char[4];
+		// sprintf(realdim_char,"%d",realdim);
+		// //printf("Mando la dimensione al server: %s\n",realdim_char);
+		// write(sockfd,realdim_char,4);
 
 		//printf("Mando la stringa al server: %s\n");
-		write(sockfd, buff, realdim);
+		//write(sockfd, buff, realdim);
+		write(sockfd, buff, dim);
 
         if (strncmp("quit", buff, 4) == 0) {
 			printf("ESCO.\n");
@@ -57,20 +63,19 @@ void func(int sockfd){
 		}
 
 		bzero(buff, dim);
-		read(sockfd, buff, dim);
-		printf("\nRisposta : %s\n", buff);
+		//read(sockfd, buff, dim);
+		//printf("\nRisposta : %s\n", buff);
 	}
 }
 
-int main()
-{
+int main(){
+
+
 	int sockfd, connfd;
-	struct sockaddr_in servaddr, cli;
-
-
+	struct sockaddr_un servaddr;
 	
 	// socket create and verification
-	sockfd = socket(AF_INET, SOCK_STREAM, 0);
+	sockfd = socket(AF_UNIX, SOCK_STREAM, 0);
 	if (sockfd == -1) {
 		printf("socket creation failed...\n");
 		exit(0);
@@ -80,12 +85,12 @@ int main()
 	bzero(&servaddr, sizeof(servaddr));
 
 	// assign IP, PORT
-	servaddr.sin_family = AF_INET;
-	servaddr.sin_addr.s_addr = inet_addr("127.0.0.1");
-	//forse devo dare una porta diversa per ognuno
-	servaddr.sin_port = htons(PORT);
+	servaddr.sun_family = AF_UNIX;
+	strcpy(servaddr.sun_path,SOCKNAME);
+	//servaddr.sin_addr.s_addr = inet_addr("127.0.0.1");
+	//servaddr.sin_port = htons(PORT);
 
-	// connect the client socket to server socket
+
 	if (connect(sockfd, (SA*)&servaddr, sizeof(servaddr)) != 0) {
 		printf("connection with the server failed...\n");
 		exit(0);
@@ -93,14 +98,9 @@ int main()
 	else
 		printf("connected to the server..\n");
 
-		
-
-	
-
-	// function for chat
 	func(sockfd);
-
-	// close the socket
 	close(sockfd);
+
 	return 0;
 }
+
