@@ -59,6 +59,11 @@ int main (){
 	serv_sock_address.sun_family = AF_UNIX;
 	strcpy(serv_sock_address.sun_path,SOCKNAME);
 
+	int flag = 1;  
+    if (-1 == setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof(flag))) {  
+        Perror("setsockopt fail");  
+    }  
+
 	if((bind(server_socket,(SA*)&serv_sock_address,sizeof(serv_sock_address))) !=0){
 		printf("socket bind fallita...\n");
 		exit(EXIT_FAILURE);
