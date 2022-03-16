@@ -171,6 +171,15 @@ void main(){
         }
     }
 
+    //
+    //
+    //
+    //SEGNALI SIGNAL
+    #include <signal.h>
+    //gli unici segnali che si accumulano sono i SIGCHLD 
+    //tutti gli altri vengono persi se ne arriva un altro dello stesso tipo
+    //
+
 
 
 }

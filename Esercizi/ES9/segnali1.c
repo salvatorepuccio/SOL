@@ -4,6 +4,9 @@
 #include <string.h>
 #include <unistd.h>
 
+//i segnali sono diversi su macos rispetto a linux
+//attenzione
+
 
 static void gestore (int signum) {
     printf("Ricevuto segnale %d\n",signum);
@@ -18,12 +21,12 @@ int main (void) {
     memset( &s, 0, sizeof(s) );
 
     /* registro gestore */
-    s.sa_handler=gestore; 
+    s.sa_handler=SIG_IGN; 
     
     /* installo nuovo gestore s */
     //ec_meno1( sigaction(SIGINT,&s,NULL) );
     sigaction(SIGINT,&s,NULL);//CTRL-C (2)
-    sigaction(SIGTSTP,&s,NULL);//CTRL-Z(18)
+    //sigaction(SIGTSTP,&s,NULL);//CTRL-Z(18 in macos, 20 linux)
 
     for (i=1;;i++) {
         sleep(1);
