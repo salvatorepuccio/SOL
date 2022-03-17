@@ -15,17 +15,17 @@ void handler(int sig){
 
 int main(int argc, char* argv[]) {
     struct sigaction sa;
-    sa.sa_handler = &handle_sigtstp; 
+    sa.sa_handler = &handler; 
 
     sa.sa_flags=SA_RESTART;//server perche' stiamo usando printf, per un motivo non specificato
     // sigaction(SIGTSTP, &sa, NULL);
     // sigaction(SIGINT, &sa, NULL);
     sigaction(SIGCONT, &sa, NULL);
 
-    for(;;){
-        printf("for\n");
-        sleep(3); 
-    }
+    // for(;;){
+    //     printf("for\n");
+    //     sleep(3); 
+    // }
 
 
     int x;
