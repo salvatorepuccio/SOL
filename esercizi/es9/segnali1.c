@@ -50,7 +50,6 @@ static void handler (int code) {
 
     }//switch
     
-    
 } 
 
 int main (void) {

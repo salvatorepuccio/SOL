@@ -10,7 +10,7 @@
 #include <sys/select.h>
 #include <sys/time.h>
 #include <sys/types.h>
-#include <util.h>
+//#include <util.h>
 
 static volatile sig_atomic_t sigintcounter = - 1;
 static volatile sig_atomic_t sigstpcounter = -1;
