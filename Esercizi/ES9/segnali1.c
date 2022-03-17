@@ -41,17 +41,7 @@ static void handler (int code) {
             if(count_sigtstp>=3){
                 //chiedi se terminare
                 int err,status;
-                pthread_t tid;
-                if((err=pthread_create(&tid,NULL,&exit_prompt,NULL))!=0){
-                    //gestisci errore
-                    perror("creazione exit prompt thread");exit(EXIT_FAILURE);
-                }
-                char risposta;
-                printf("Premi invio per continuare a usare\n");
-                scanf("%c",&risposta);
-                //se sono qui ha premuto invio sicuro, scanf bloccante
-                printf("OK\n");
-                alarm(0);            
+                        
             }
             break;
 
@@ -64,16 +54,15 @@ static void handler (int code) {
 } 
 
 int main (void) {
-    struct sigaction action; 
+    struct sigaction sa; 
     
 
     //imposto gestore di SIGINT
-    memset(&action, 0, sizeof(action));
-    action.sa_handler=handler; 
+    memset(&sa, 0, sizeof(sa));
+    sa.sa_handler=handler; 
 
-    
-    sigaction(SIGINT,&action,NULL);
-    sigaction(SIGTSTP,&action,NULL);
+    sigaction(SIGINT,&sa,NULL);
+    sigaction(SIGTSTP,&sa,NULL);
 
     printf("Ciclo infinito...\n");
     for (;;) 

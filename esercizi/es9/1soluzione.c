@@ -42,7 +42,7 @@ static void sighandler (int sig) {
 int main() {
     sigset_t mask, oldmask;
     sigemptyset(&mask); // resetto tutti i bits
-    sigaddset(&mask, SIGINT); //11 aggiunto SIGINT alla machera
+    sigaddset(&mask, SIGINT); // aggiunto SIGINT alla machera
     sigaddset (&mask, SIGTSTP); // aggiunto SIGTSTP alla machera
     // blocco i segnali SIGINT e SIGTSTP finche' non ho finito
     // l'installazione deli handler mi conservo la vecchia maschera
@@ -60,7 +60,7 @@ int main() {
     sigaddset(&handlermask, SIGINT);
     sigaddset(&handlermask, SIGTSTP);
     sigaddset(&handlermask, SIGALRM);
-    sa.sa_mask = handlermask; // L handler eseguirà con SIGINT e SIGTST
+    sa.sa_mask = handlermask; // L handler eseguirà con SIGINT e SIGTSTP
 
 
     if (sigaction(SIGINT, &sa, NULL) ==-1)
@@ -75,7 +75,7 @@ int main() {
 
     while(1) {
         // atomicamente setta la maschera e si sospende
-        // come soluztone alternativa avret potuto usare sigwait
+        // come soluzione alternativa avrei potuto usare sigwait
         // senza installare il signal handler
         if (sigsuspend(&oldmask) == -1 && errno != EINTR) {
             perror("sigsuspend");
@@ -118,8 +118,8 @@ int main() {
                     case 0: // timeout
                         --cnt;
                         printf("\033[1A"); // Move cursor up 1 row (man console_code)
-                        printf("Per continuare premere invio, altrimenti carrai terminato entro %d secondi \n",cnt);
-                        flush (stdout);
+                        printf("Per continuare premere invio, altrimenti verrai terminato entro %d secondi \n",cnt);
+                        fflush(stdout);
                     continue;
 
                     default:;
