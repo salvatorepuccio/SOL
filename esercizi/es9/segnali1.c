@@ -24,30 +24,20 @@ static void* exit_prompt(void* arg){
     return (void*)0;
 }
 
-
 //handler di sigtstp ctrl-z
 static void handler (int code) {
     //printf("code: %d\n",code);
 
     switch(code){
-
         case SIGINT:
             count_sigint++;
             break;
-
         case SIGTSTP:
-            printf("\nSIGINT fino ad ora: %d\n",count_sigint);
+            printf("\n[%d]SIGINT fino ad ora: %d\n",getpid(),count_sigint);
             count_sigtstp++;
-            if(count_sigtstp>=3){
-                //chiedi se terminare
-                int err,status;
-                        
-            }
             break;
-
         default:
             break;
-
     }//switch
     
 } 
@@ -59,13 +49,24 @@ int main (void) {
     //imposto gestore di SIGINT
     memset(&sa, 0, sizeof(sa));
     sa.sa_handler=handler; 
+    sa.sa_flags=SA_RESTART;
 
     sigaction(SIGINT,&sa,NULL);
     sigaction(SIGTSTP,&sa,NULL);
 
     printf("Ciclo infinito...\n");
-    for (;;) 
-        ;
+    for (;;){ 
+        if(count_sigtstp>=3){
+            char c;
+            printf("Chiudo tra 10 secondi, premi invio per evitarlo\n");
+            alarm(10);
+            scanf("%c",&c);
+            alarm(0);
+            count_sigint=0;
+            count_sigtstp=0;
+        }      
+    }
+        
     
     return 0;
 }
