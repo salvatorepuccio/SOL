@@ -62,6 +62,8 @@ int main (void) {
             alarm(10);
             scanf("%c",&c);
             alarm(0);
+            system("clear");
+            printf("continuiamo..\n");
             count_sigint=0;
             count_sigtstp=0;
         }      
