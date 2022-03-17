@@ -33,4 +33,5 @@ int main(int argc, char* argv[]) {
     scanf("%d", &x) ;
     printf("Result %d * 5 = %d\n", x, x * 5);
     return 0;
+    //modifica da macos
 }
