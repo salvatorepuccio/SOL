@@ -46,7 +46,7 @@ int main() {
     sigaddset (&mask, SIGTSTP); // aggiunto SIGTSTP alla machera
     // blocco i segnali SIGINT e SIGTSTP finche' non ho finito
     // l'installazione deli handler mi conservo la vecchia maschera
-    if (sigprocmask (SIG_BLOCK, &mask, &oldmask) == -1) {
+    if (sigprocmask(SIG_BLOCK, &mask, &oldmask) == -1) {
         perror("sigprocmask");
         return EXIT_FAILURE;
     }
@@ -90,7 +90,7 @@ int main() {
         if(sigstpcounter == 3) {
             sigstpcounter = 0;
             //printf("\033[2]"); // Clear screen
-            printf ("Per continuare premere invio, altrimenti verrat terminato entro 10 secondi\n");
+            printf ("Per continuare premere invio, altrimenti verrai terminato entro 10 secondi\n");
             fflush(stdout);
             alarm(10);
             fd_set set, tmpset;

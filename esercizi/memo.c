@@ -5,7 +5,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <stdbool.h>
-
+#include <signal.h>
 
 
 void main(){
@@ -174,13 +174,33 @@ void main(){
     //
     //
     //
-    //SEGNALI SIGNAL
-    #include <signal.h>
+    //SEGNALI SIGNAL (maledetti)
     //gli unici segnali che si accumulano sono i SIGCHLD 
     //tutti gli altri vengono persi se ne arriva un altro dello stesso tipo
-    //
+    sigset_t mask,oldmask,handlermask;
+    sigemptyset(&mask);
+    sigaddset(&mask, SIGINT); 
+    sigaddset (&mask, SIGTSTP);
 
+    //ignora (SIG_BLOCK) i segnali in mask, mentre salva in oldmask quella attuale
+    //solo per single thread
+    sigprocmask(SIG_BLOCK, &mask, &oldmask);
+    
+    //come sopra ma per programmi multithread
+    pthread_sigmask(SIG_BLOCK, &mask, &oldmask);
 
+    //imposta la maschera dell'handler, cosi reagira' a questi 3 SIG
+    struct sigaction sa;
+    sa.sa_mask = handlermask;
+
+    //imposto gestore di SIGINT
+    memset(&sa, 0, sizeof(sa));
+    sa.sa_handler=handler; 
+
+    //non ho capito a che serve
+    sigaction(SIGINT,&sa,NULL);
+    sigaction(SIGTSTP,&sa,NULL);
+    //sigaction(SIGALRM,&sa,NULL);
 
 }
 
