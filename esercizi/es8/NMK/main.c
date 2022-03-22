@@ -5,7 +5,7 @@
 #include <pthread.h>
 #include <errno.h>
 #include <assert.h>
-#include <queue.h> // definisce il tipo Queue t
+#include "queue.h" // definisce il tipo Queue t
 
 // tipo di dato usato per passare gli argomenti al thread
 typedef struct threadArgs {
@@ -79,7 +79,7 @@ int main(int argc, char *argv[]) {
             c=atoi(optarg);
             break;
             case'n':
-            n=atot(optarg);
+            n=atoi(optarg);
             break;
             default:
             usage(argv[0]);

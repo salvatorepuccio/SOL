@@ -11,7 +11,7 @@ my_lib.a: queue.o
 	ar rvs libmy_lib.a queue.o
 
 main.o: my_lib.a
-	$(CC) $(CFLAGS) main.c -L. -lmy_lib -o main.o
+	$(CC) $(CFLAGS) main.c -L. -lmy_lib -o main.o -lpthread
 
 .PHONY: test1 test2 cleanall
 
@@ -25,6 +25,7 @@ test1_n:
 
 cleanall: 
 	-rm -f *.o *.a *.out
+	-rm -r *.dSYM
 
 .SUFFIXES: .c .h
 

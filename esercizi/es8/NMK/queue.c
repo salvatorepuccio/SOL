@@ -4,8 +4,28 @@
 #include <assert.h>
 #include <errno.h>
 #include <pthread.h>
-#include <util.h>
-#include <queue.h>
+//#include <util.h>
+#include "queue.h"
+
+
+void LOCK(pthread_mutex_t *mutex){
+    pthread_mutex_lock(mutex);
+}
+
+void UNLOCK(pthread_mutex_t *mutex){
+    pthread_mutex_unlock(mutex);
+}
+
+
+void WAIT(pthread_cond_t *cond, pthread_mutex_t *mutex){
+    pthread_cond_wait(cond,mutex);
+}
+
+
+void SIGNAL(pthread_cond_t *cond){
+    pthread_cond_signal(cond);
+}
+
 
 /*@file queue.c
 @brief File di implementazione dell'interfaccia per la coda*/
@@ -46,7 +66,7 @@ Queue_t *initQueue() {
 }
 
 void deleteQueue(Queue_t *q) {
-    while(q->head = q->tail){
+    while(q->head == q->tail){
         Node_t *p= (Node_t*)q->head;
         q->head = q->head->next;
         freeNode(p);
