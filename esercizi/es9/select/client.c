@@ -17,7 +17,6 @@
 
 #define SOCKNAME "./mysock"
 #define UNIX_PATH_MAX 108
-#define PORT 9999
 #define SA struct sockaddr
 
 void func(int sockfd){

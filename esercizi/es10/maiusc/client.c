@@ -15,7 +15,6 @@
 #include <sys/un.h>
 #include <errno.h>
 
-#define PORT 8080
 #define SA struct sockaddr
 #define SOCKETNAME "./mysocket"
 

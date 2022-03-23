@@ -4,8 +4,15 @@ TARGETS = client.o server.o
 
 normal: $(TARGETS)
 
-server.o: 
-	$(CC) $(CFLAGS) server.c -o server.o -lpthread
+
+server.o: my_lib.a
+	$(CC) $(CFLAGS) server.c -L. -lmy_lib -o server.o -lpthread
+
+my_lib.a: id.o
+	ar rvs libmy_lib.a id.o	
+
+id.o: 
+	$(CC) -c id.c
 
 client.o:
 	$(CC) $(CFLAGS) client.c -o client.o

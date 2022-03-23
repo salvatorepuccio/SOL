@@ -8,23 +8,23 @@
 #include "queue.h"
 
 
-void LOCK(pthread_mutex_t *mutex){
-    pthread_mutex_lock(mutex);
-}
+// void LOCK(pthread_mutex_t *mutex){
+//     pthread_mutex_lock(mutex);
+// }
 
-void UNLOCK(pthread_mutex_t *mutex){
-    pthread_mutex_unlock(mutex);
-}
-
-
-void WAIT(pthread_cond_t *cond, pthread_mutex_t *mutex){
-    pthread_cond_wait(cond,mutex);
-}
+// void UNLOCK(pthread_mutex_t *mutex){
+//     pthread_mutex_unlock(mutex);
+// }
 
 
-void SIGNAL(pthread_cond_t *cond){
-    pthread_cond_signal(cond);
-}
+// void WAIT(pthread_cond_t *cond, pthread_mutex_t *mutex){
+//     pthread_cond_wait(cond,mutex);
+// }
+
+
+// void SIGNAL(pthread_cond_t *cond){
+//     pthread_cond_signal(cond);
+// }
 
 
 /*@file queue.c
@@ -38,10 +38,10 @@ di fatto ritornare solo EINVAL se la mutex non e' stata inizializzata.*/
 static inline Node_t *allocNode()                    { return malloc (sizeof (Node_t)); }
 static inline Queue_t *allocQueue()                  { return malloc(sizeof(Queue_t)); }
 static inline void freeNode(Node_t *node)            { free((void*)node); }
-static inline void LockQueue (Queue_t *q)            { LOCK(&q->qlock); }
-static inline void UnlockQueue (Queue_t * q)         { UNLOCK(&q->qlock); }
-static inline void UnlockQueueAndWait(Queue_t *q)    { WAIT(&q->qcond, &q->qlock); }
-static inline void UnlockQueueAndSignal (Queue_t *q) { SIGNAL(&q->qcond) ; UNLOCK(&q->qlock); }
+static inline void LockQueue (Queue_t *q)            { pthread_mutex_lock(&q->qlock); }
+static inline void UnlockQueue (Queue_t * q)         { pthread_mutex_unlock(&q->qlock);  }
+static inline void UnlockQueueAndWait(Queue_t *q)    { pthread_cond_wait(&q->qcond, &q->qlock); }
+static inline void UnlockQueueAndSignal (Queue_t *q) { pthread_cond_signal(&q->qcond) ; pthread_mutex_unlock(&q->qlock); }
 
 
 Queue_t *initQueue() {
@@ -78,7 +78,7 @@ void deleteQueue(Queue_t *q) {
 }
 
 int push(Queue_t *q, void *data) {
-    if ( (q == NULL) || (data == NULL)) { errno= EINVAL; return 1;}
+    if ( (q == NULL) || (data == NULL) ) { errno = EINVAL; return 1;}
     Node_t *n= allocNode();
     if ( !n) return 1;
     n->data = data;

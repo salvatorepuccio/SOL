@@ -1,19 +1,20 @@
 CC =  gcc
 CFLAGS += -g
+TARGETS = main.o
 
-
-
-
-queue.o: 
-	$(CC) -c queue.c
-
-my_lib.a: queue.o
-	ar rvs libmy_lib.a queue.o
 
 main.o: my_lib.a
 	$(CC) $(CFLAGS) main.c -L. -lmy_lib -o main.o -lpthread
 
-.PHONY: test1 test2 cleanall
+my_lib.a: queue.o
+	ar rvs libmy_lib.a queue.o	
+
+queue.o: 
+	$(CC) -c queue.c
+
+
+
+.PHONY: test1 cleanall
 
 test1: main.o
 		./main.o -p 3 -c 2 -n 100

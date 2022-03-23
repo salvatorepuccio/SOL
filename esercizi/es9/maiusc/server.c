@@ -19,12 +19,17 @@
 #include <time.h>
 #include <netinet/in.h>
 #include <pthread.h>
+#include <stdbool.h>
+//nuovo
+#include <sys/select.h>
+#include <sys/un.h>
+#include <errno.h>
 
 //COSA ABBIAMO CAPITO? che non è possibile riallocare dopo una read() da socket, e poi continuare la read
 //infatti i dati non letti sono ormai andati persi, alla prima read() dobbiamo essere pronti sapendo quanti caratteri dovrò leggere
 
-#define PORT 8080
 #define SA struct sockaddr
+#define SOCKETNAME "./mysocket"
 
 typedef struct {
 	int connfd;
@@ -83,53 +88,53 @@ void* client_holder(void* arg){
 
 
 
-int main()
-{
+int main(){
+
 	int accept_socket, connfd, len,err,status,c_id=0;
-	struct sockaddr_in servaddr, cli;
+	struct sockaddr_un servaddr, cli;
 	pthread_t t1;
 
 	// socket create and verification
-	accept_socket = socket(AF_INET, SOCK_STREAM, 0);
+	accept_socket = socket(AF_UNIX, SOCK_STREAM, 0);
 	if (accept_socket == -1) {
-		printf("socket creation failed...\n");
-		exit(0);
+		perror("creazNASOCKETNAMEi;one di accetp socket\n");
+		unlink(SOCKETNAME);
+		exit(EXIT_FAILURE);
 	}
-	else
-		printf("Socket successfully created..\n");
+
 	bzero(&servaddr, sizeof(servaddr));
 
-	// assign IP, PORT
-	servaddr.sin_family = AF_INET;
-	servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
-	servaddr.sin_port = htons(PORT);
+	servaddr.sun_family = AF_UNIX;
+	strcpy(servaddr.sun_path,SOCKETNAME);
 
 	// Binding newly created socket to given IP and verification
 	if ((bind(accept_socket, (SA*)&servaddr, sizeof(servaddr))) != 0) {
-		printf("socket bind failed...\n");
-		exit(0);
+		perror("binding\n");
+		unlink(SOCKETNAME);
+		exit(EXIT_FAILURE);
 	}
-	else
-		printf("Socket successfully binded..\n");
 
 	for(;;){
 		// Now server is ready to listen and verification
 		if ((listen(accept_socket, 5)) != 0) {
-			printf("Listen failed...\n");
-			exit(0);
+			perror("listening\n");
+			unlink(SOCKETNAME);
+			exit(EXIT_FAILURE);
 		}
 		else
-			printf("Server listening..\n");
-		len = sizeof(cli);
+			printf("Server in ascolto..\n");
+			
+		socklen_t len = sizeof(cli);
 
 		// Accept the data packet from client and verification
 		connfd = accept(accept_socket, (SA*)&cli, &len);
 		if (connfd < 0) {
-			printf("server accept failed...\n");
-			exit(0);
+			perror("accettazione di un nuovo client...\n");
+			unlink(SOCKETNAME);
+			exit(EXIT_FAILURE);
 		}
 		else
-			printf("server accept the client %d\n",c_id);
+			printf("Nuovo client accettato %d\n",c_id);
 
 		// Function for chatting between client and server
 		//func(connfd);
@@ -140,10 +145,14 @@ int main()
 
 		if((err=pthread_create(&t1,NULL,&client_holder,c))!=0){
 				//gestisci errore
-				perror("creazione thread");exit(EXIT_FAILURE);
+				perror("creazione thread");
+				unlink(SOCKETNAME);
+				exit(EXIT_FAILURE);
 			}
 		c_id++;
 	}
 	// After chatting close the socket
 	close(accept_socket);
+	unlink(SOCKETNAME);
+	return 0;
 }

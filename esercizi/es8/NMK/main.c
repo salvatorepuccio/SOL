@@ -43,7 +43,7 @@ void *Producer (void *arg){
 // funzione eseguita dal thread consumatore
 void *Consumer (void *arg) {
     Queue_t *q = ((threadArgs_t*)arg)->q;
-    int myid = ((threadArgs_t*)arg)->thid;
+    int myid   = ((threadArgs_t*)arg)->thid;
     size_t consumed=0;
     while(1) {
         int *data;
@@ -87,7 +87,7 @@ int main(int argc, char *argv[]) {
         }
     }
     if(p==0 || c==0 || n==0) usage(argv[0]);
-    printf("num producers =%d, num consumers =%d\n", p, c);
+    printf("num producers = %d, num consumers = %d\n",p,c);
     pthread_t *th;
     threadArgs_t *thARGS;
     th = malloc((p+c)*sizeof(pthread_t));
@@ -104,17 +104,17 @@ int main(int argc, char *argv[]) {
     int chunk = n/p, r= n%p;
     int start = 0;
     for (int i=0;i<p;++i) {
-        thARGS[1].thid =i ;
-        thARGS[i].q =q;
-        thARGS[i].start= start;
-        thARGS[i].stop = start+chunk + ((i<r)?1:0);
-        start = thARGS[i].stop;
+        thARGS[i].thid  = i ;
+        thARGS[i].q     = q;
+        thARGS[i].start = start;
+        thARGS[i].stop  = start+chunk + ((i<r)?1:0);
+        start           = thARGS[i].stop;
     }
     for(int i=p;i<(p+c); ++i) {
-        thARGS[i].thid = i-p;
-        thARGS[i].q = q;
-        thARGS[i] .start= 0;
-        thARGS[i].stop = 0;
+        thARGS[i].thid   = i-p;
+        thARGS[i].q      = q;
+        thARGS[i] .start = 0;
+        thARGS[i].stop   = 0;
     }
     for(int i=0;i<c; ++i)
         if(pthread_create(&th[p+i], NULL, Consumer, &thARGS[p+i]) != 0) {
@@ -133,16 +133,16 @@ int main(int argc, char *argv[]) {
     // quindi si aspettano i consumatori
 
     // aspetto prima tutti i produttori
-    for(int i=0;i<p;++i)
+    for(int i = 0;i<p;++i)
         pthread_join(th[i], NULL);
     // quindi termino tutti i consumatori
-    for(int i=0;i<c; ++i) {
+    for(int i = 0;i<c; ++i) {
         int *eos = malloc(sizeof(int));
-        *eos = -1;
+        *eos     = -1;
         push(q, eos);
     }
     // aspetto la terminazione di tutti i consumatori *
-    for(int i=0;i<c; ++i)
+    for(int i = 0;i<c; ++i)
         pthread_join(th[p+i], NULL);
     // libero memoria
     deleteQueue(q);
