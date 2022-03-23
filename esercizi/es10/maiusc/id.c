@@ -20,6 +20,7 @@ int getid(Idgenerator_t *id){
     id->id++;
     id->occupied=0;
     pthread_cond_signal(&id->cond);
+    pthread_mutex_unlock(&id->lock);
     return your_id;
 }
 

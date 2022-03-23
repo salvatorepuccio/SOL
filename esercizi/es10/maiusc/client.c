@@ -71,7 +71,7 @@ int main()
 	int client_socket;
 	struct sockaddr_un servaddr, cli;
 
-
+	system("clear");
 	
 	// socket create and verification
 	client_socket = socket(AF_UNIX, SOCK_STREAM, 0);

@@ -11,7 +11,6 @@
 //ovvero liberando la memoria allocata per non avere errori o memory leak
 //testare tutto con valgrind --leak-cheack=full
 
-
 #include <stdio.h>
 #include <netdb.h>
 #include <netinet/in.h>
@@ -26,45 +25,41 @@
 #include <netinet/in.h>
 #include <pthread.h>
 #include <stdbool.h>
-//nuovo
 #include <sys/select.h>
 #include <sys/un.h>
 #include <errno.h>
 #include "id.h"
-#include <stdio.h>
 #include <signal.h>
-#include <stdlib.h>
-#include <string.h>
-#include <errno.h>
-#include <unistd.h>
-#include <sys/select.h>
 #include <sys/time.h>
-#include <sys/types.h>
 
-//COSA ABBIAMO CAPITO? che non è possibile riallocare dopo una read() da socket, e poi continuare la read
-//infatti i dati non letti sono ormai andati persi, alla prima read() dobbiamo essere pronti sapendo quanti caratteri dovrò leggere
 
 #define SA struct sockaddr
 #define SOCKETNAME "./mysocket"
 
-// typedef struct {
-// 	int connfd;
-// 	int id;
-// }client;
 
 Idgenerator_t *generator=NULL;
 
 static volatile sig_atomic_t terminazione = 0;//se =1 dobbiamo terminare
+static volatile sig_atomic_t sigpipe = 0;
+
+//lista dei thread
+	typedef struct Listath{
+		pthread_t thread;
+		int connfd;
+		int status;
+		struct Listath *next;
+	}Listath_t;
 
 
 static void sighandler (int sig) {
     if(sig == SIGPIPE){
-		//non fare niente
+		sigpipe = 1;
+		printf("sigpipe\n");
 	}
 	else if(sig == SIGINT || sig == SIGHUP || sig == SIGQUIT || sig == SIGTERM){
 		//gestisci graceful
 		terminazione = 1;
-		exit(EXIT_FAILURE);
+		printf("sigint o hup o quit o term\n");
 	}
 	else return;
 }
@@ -102,17 +97,17 @@ void* client_holder(void* arg){
 
 		//printf("Stringa da client n %d: %s ",cli->id ,buff);
 
-        if (strncmp("quit", buff, toread) == 0) {
+        if (strncmp("quit", buff, 4) == 0) {
 			printf("Disconnetto client %d\n",my_id);
 			//sleep(2);
 			break;
 		}
 
-		if (strncmp("my_id", buff, toread) == 0) {
-			printf("vuole sapere l'id\n");
-			toread=sizeof(int);
+		if (strncmp("my_id", buff, 5) == 0) {
+			toread=17;
+			//printf("toread = %d",toread);
 			upper=malloc(toread);
-			snprintf(upper, toread, "%d", my_id);
+			snprintf(upper, toread, "your id is: %d",my_id);
 		}
 		else{
 			upper=malloc(toread);
@@ -124,7 +119,13 @@ void* client_holder(void* arg){
 		// and send that buffer to client
 		write(connfd, upper, toread);
 		free(upper);
+
+		if(terminazione == 1){
+			printf("[%d] break\n",my_id);
+			break;
+		}
 	}
+
 	return (void*)0;
 }
 
@@ -135,20 +136,6 @@ void* client_holder(void* arg){
 int main(){
 
 	//segnali
-	sigset_t mask, oldmask;
-    sigemptyset(&mask); // resetto tutti i bits
-    sigaddset(&mask, SIGINT); // aggiunto SIGINT alla machera
-    sigaddset(&mask, SIGHUP); // aggiunto SIGTSTP alla machera
-	sigaddset(&mask, SIGQUIT);
-	sigaddset(&mask, SIGTERM);
-
-    // blocco i segnali SIGINT e SIGTSTP finche' non ho finito
-    // l'installazione deli handler mi conservo la vecchia maschera
-    if (sigprocmask(SIG_BLOCK, &mask, &oldmask) == -1) {
-        perror("sigprocmask");
-        exit(EXIT_FAILURE);
-    }
-    // installo un unico signal handler per tutti i segnali che mi inter
     struct sigaction sa;
     // resetto la struttura
     memset (&sa, 0, sizeof(sa));
@@ -165,20 +152,22 @@ int main(){
     if (sigaction(SIGINT, &sa, NULL) ==-1)
         perror("sigaction SIGINT");
     if (sigaction(SIGHUP, &sa, NULL) ==-1)
-        perror("sigaction SIGSTOP");
+        perror("sigaction SIGHUP");
     if (sigaction(SIGQUIT, &sa, NULL) ==-1)
-        perror ("sigaction SIGALRM");
+        perror ("sigaction SIGQUIT");
 	if (sigaction(SIGTERM, &sa, NULL) ==-1)
-        perror ("sigaction SIGALRM");
-    // if (system("clear")<0) 
-    //     perror ("system");
+        perror ("sigaction SIGTERM");
+    if (system("clear")<0) 
+        perror ("system");
     
 
-	int accept_socket, connfd, len,err,status;
+	int accept_socket,connfd,len,err;
 	struct sockaddr_un servaddr, cli;
-	pthread_t t1;
+	bzero(&servaddr, sizeof(servaddr));
+	servaddr.sun_family = AF_UNIX;
+	strcpy(servaddr.sun_path,SOCKETNAME);
 
-	// socket create and verification
+	//SOCKET
 	accept_socket = socket(AF_UNIX, SOCK_STREAM, 0);
 	if (accept_socket == -1) {
 		perror("creazione di accept socket\n");
@@ -186,12 +175,9 @@ int main(){
 		exit(EXIT_FAILURE);
 	}
 
-	bzero(&servaddr, sizeof(servaddr));
+	
 
-	servaddr.sun_family = AF_UNIX;
-	strcpy(servaddr.sun_path,SOCKETNAME);
-
-	// Binding newly created socket to given IP and verification
+	//BINDING
 	if ((bind(accept_socket, (SA*)&servaddr, sizeof(servaddr))) != 0) {
 		perror("binding\n");
 		unlink(SOCKETNAME);
@@ -200,16 +186,14 @@ int main(){
 
 	generator=init_id();
 
+
+	//lista dei thread che usero' (solo io)
+	Listath_t *head=NULL,*current=head;
+
 	for(;;){
-		if (sigsuspend(&oldmask) == -1 && errno != EINTR) {
-            perror("sigsuspend");
-            return (EXIT_FAILURE);
-        }
-		if(terminazione == 1){
-			//terminare tutto
-		}
-		// Now server is ready to listen and verification
-		if ((listen(accept_socket, 5)) != 0) {
+		
+		//LISTEN
+		if ((listen(accept_socket, SOMAXCONN)) != 0) {
 			perror("listening\n");
 			unlink(SOCKETNAME);
 			exit(EXIT_FAILURE);
@@ -219,32 +203,93 @@ int main(){
 			
 		socklen_t len = sizeof(cli);
 
-		// Accept the data packet from client and verification
-		connfd = accept(accept_socket, (SA*)&cli, &len);
+		//ACCEPT
+		connfd = accept(accept_socket, (SA*)&cli, &len);//bloccante?
 		if (connfd < 0) {
-			perror("accettazione di un nuovo client...\n");
-			unlink(SOCKETNAME);
-			exit(EXIT_FAILURE);
+			if(terminazione == 1)
+				break;
+			else if(sigpipe == 1){
+				//era un sigpipe, ignora
+				sigpipe=0;
+				continue;
+			}	
+			else{
+				perror("accettazione di un nuovo client...\n");
+				unlink(SOCKETNAME);
+				exit(EXIT_FAILURE);
+			}
 		}
 		else
 			printf("Nuovo client accettato\n");
 
-		// Function for chatting between client and server
-		//func(connfd);
 
-		// client *c=malloc(sizeof(client*));
-		// c->connfd=connfd;
-		// c->id=c_id;
-
-		if((err=pthread_create(&t1,NULL,&client_holder,connfd))!=0){
+		//creare nuovo thread
+		if(head==NULL){
+			head = malloc(sizeof(Listath_t));
+			current = head;
+		}
+		else{
+			current->next = malloc(sizeof(Listath_t));
+			current = current->next;
+		}
+		current->connfd=connfd;
+		current->next=NULL;
+		if((err=pthread_create(&current->thread,NULL,&client_holder,current->connfd))!=0){
 				//gestisci errore
 				perror("creazione thread per gestire client\n");
 				unlink(SOCKETNAME);
 				exit(EXIT_FAILURE);
-			}
-		//c_id++;
+		}
+		else{
+			printf("nuovo thread %d per client\n",connfd);
+		}
 	}
-	// After chatting close the socket
+	// if(terminazione == 1){
+	// 	//fare join di tutti i thread 
+	// 	//Listath_t *tmp;
+	// 	if(head!=NULL){
+	// 		int i =1;
+	// 		printf("elemento n %d\n",i);
+	// 		current = head;
+	// 		printf("close %d\n",current->connfd);
+	// 		close(current->connfd);
+	// 		pthread_join(current->thread,(void*) &current->status);
+	// 		//tmp=current;
+	// 		while(current->next != NULL){
+	// 			i++;
+	// 			printf("elemento n %d\n",i);
+	// 			current = current->next;
+	// 			//free(tmp);
+	// 			printf("close %d\n",current->connfd);
+	// 			close(current->connfd);
+	// 			pthread_join(current->thread,(void*) &current->status);
+	// 			//tmp=current;
+	// 		}
+	// 	}
+		
+
+	// 	//free di tutte le strutture dati, quindi soltanto del generator
+	// 	printf("dobbiamo terminare\n");
+	// 	free(generator);
+	// }
+
+	if(terminazione ==1){
+		if(head != NULL){
+			Listath_t *tmp=NULL;
+			int i=0;
+			//se c'e' almeno un elemento
+			printf("Elemento n: %d, connfd: %d\n",i,head->connfd);
+			current=head;
+			while(current->next != NULL){
+				i++;
+				tmp=current;
+				current=current->next;
+				free(tmp);
+				printf("Elemento n: %d, connfd: %d\n",i,current->connfd);
+			}
+		}
+		free(generator);
+	}
 	close(accept_socket);
 	unlink(SOCKETNAME);
 	return 0;
