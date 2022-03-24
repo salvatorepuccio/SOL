@@ -122,6 +122,7 @@ void* client_holder(void* arg){
 
 		if(terminazione == 1){
 			printf("[%d] break\n",my_id);
+			if(upper!=NULL)free(upper);
 			break;
 		}
 	}
@@ -280,13 +281,20 @@ int main(){
 			//se c'e' almeno un elemento
 			printf("Elemento n: %d, connfd: %d\n",i,head->connfd);
 			current=head;
-			while(current->next != NULL){
-				i++;
-				tmp=current;
-				current=current->next;
-				free(tmp);
-				printf("Elemento n: %d, connfd: %d\n",i,current->connfd);
+			if(head->next == NULL){
+				//c'era un solo elemento
+				free(head);
 			}
+			else{
+				while(current->next != NULL){
+					i++;
+					tmp=current;
+					current=current->next;
+					free(tmp);
+					printf("Elemento n: %d, connfd: %d\n",i,current->connfd);
+				}
+				free(current);
+			}	
 		}
 		free(generator);
 	}
