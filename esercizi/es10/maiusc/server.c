@@ -99,7 +99,8 @@ void* client_holder(void* arg){
 
         if (strncmp("quit", buff, 4) == 0) {
 			printf("Disconnetto client %d\n",my_id);
-			//sleep(2);
+			free(buff);
+			//free(size);
 			break;
 		}
 
@@ -119,6 +120,7 @@ void* client_holder(void* arg){
 		// and send that buffer to client
 		write(connfd, upper, toread);
 		free(upper);
+		free(buff);
 
 		if(terminazione == 1){
 			printf("[%d] break\n",my_id);
@@ -227,9 +229,11 @@ int main(){
 		//creare nuovo thread
 		if(head==NULL){
 			head = malloc(sizeof(Listath_t));
+			printf("ho fatto una malloc\n");
 			current = head;
 		}
 		else{
+			printf("ho fatto una malloc\n");
 			current->next = malloc(sizeof(Listath_t));
 			current = current->next;
 		}
@@ -245,56 +249,27 @@ int main(){
 			printf("nuovo thread %d per client\n",connfd);
 		}
 	}
-	// if(terminazione == 1){
-	// 	//fare join di tutti i thread 
-	// 	//Listath_t *tmp;
-	// 	if(head!=NULL){
-	// 		int i =1;
-	// 		printf("elemento n %d\n",i);
-	// 		current = head;
-	// 		printf("close %d\n",current->connfd);
-	// 		close(current->connfd);
-	// 		pthread_join(current->thread,(void*) &current->status);
-	// 		//tmp=current;
-	// 		while(current->next != NULL){
-	// 			i++;
-	// 			printf("elemento n %d\n",i);
-	// 			current = current->next;
-	// 			//free(tmp);
-	// 			printf("close %d\n",current->connfd);
-	// 			close(current->connfd);
-	// 			pthread_join(current->thread,(void*) &current->status);
-	// 			//tmp=current;
-	// 		}
-	// 	}
-		
 
-	// 	//free di tutte le strutture dati, quindi soltanto del generator
-	// 	printf("dobbiamo terminare\n");
-	// 	free(generator);
-	// }
 
-	if(terminazione ==1){
+	if(terminazione == 1){
 		if(head != NULL){
 			Listath_t *tmp=NULL;
 			int i=0;
 			//se c'e' almeno un elemento
 			printf("Elemento n: %d, connfd: %d\n",i,head->connfd);
+			
+			pthread_join(head->thread,(void*) &head->status);close(head->connfd);
 			current=head;
-			if(head->next == NULL){
-				//c'era un solo elemento
-				free(head);
+			while(current->next != NULL){
+				i++;
+				tmp=current;
+				current=current->next;
+				free(tmp);
+				printf("Elemento n: %d, connfd: %d\n",i,current->connfd);
+				
+				pthread_join(current->thread,(void*) &current->status);close(current->connfd);
 			}
-			else{
-				while(current->next != NULL){
-					i++;
-					tmp=current;
-					current=current->next;
-					free(tmp);
-					printf("Elemento n: %d, connfd: %d\n",i,current->connfd);
-				}
-				free(current);
-			}	
+			free(current);
 		}
 		free(generator);
 	}
