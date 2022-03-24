@@ -74,7 +74,7 @@ static void sighandler (int sig) {
 		write(pfd[0],"sig quale?",11);
 	}
 	else{
-		printf("[SH] segnale sconosciuto: %s\n",sig);
+		printf("[SH] segnale sconosciuto: %d\n",sig);
 	}
 }
 
@@ -156,7 +156,6 @@ void* client_holder(void* arg){
 							read(connfd, buff, toread);
 							printf("[CH] ricevuto: '%s'\n",buff);
 
-<<<<<<< HEAD
 							if (strncmp("quit", buff, 4) == 0) {
 								printf("Disconnetto client %d\n",my_id);
 								free(buff);
@@ -189,30 +188,6 @@ void* client_holder(void* arg){
 				}	
 			}
 			if(quitflag==1) break; 
-=======
-		if (strncmp("my_id", buff, 5) == 0) {
-			toread=17;
-			//printf("toread = %d",toread);
-			upper=malloc(toread);
-			snprintf(upper, toread, "your id is: %d",my_id);
-		}
-		else{
-			upper=malloc(toread);
-        	strtoupper(buff,toread,upper);
-		}
-
-		//printf("\nMando a client n %d: %s ",cli->id ,upper);
-		printf("Rispondo a %d\n",my_id);
-		// and send that buffer to client
-		write(connfd, upper, toread);
-		free(upper);
-		free(buff);
-
-		if(terminazione == 1){
-			printf("[%d] break\n",my_id);
-			if(upper!=NULL)free(upper);
-			break;
->>>>>>> fc7b66ec3622d9f94f7718c81e2f1be7f1428756
 		}
 	}
 	//ci sono delle free da fare?
