@@ -102,7 +102,7 @@ int main (){
 			//printf("ELSE: select a buon fine: %d\n",ret_select);
 			for (fd = 0; fd<=FD_SETSIZE;fd++) {
 				if (FD_ISSET(fd,&read_ready_sockets)) {
-					if (fd== server_socket) {
+					if (fd == server_socket) {
 						//nuova connessione da accettare
 						int len = sizeof cli;
 						client_socket=accept(server_socket,(SA*)&cli,&len);

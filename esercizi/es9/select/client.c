@@ -63,7 +63,7 @@ void func(int sockfd){
 
 		bzero(buff, dim);
 		read(sockfd, buff, dim);
-		printf("\nRisposta : %s\n", buff);
+		printf("\nRisposta : %s\n\n", buff);
 	}
 }
 
