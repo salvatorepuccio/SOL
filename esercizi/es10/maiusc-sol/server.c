@@ -177,14 +177,14 @@ int main(int argc,char *argv[]){
                 if (termina) break;
             } 
             else {
-            perror("accept");
-            r=EXIT_FAILURE;
+                perror("accept");
+                r=EXIT_FAILURE;
             }
         }
         printf ("connection accepted\n");
         if (spawn_thread(connfd)<0) {
-        r=EXIT_FAILURE;
-        break;
+            r=EXIT_FAILURE;
+            break;
         }
     }
     // clean-up I
