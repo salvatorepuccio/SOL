@@ -68,6 +68,7 @@ void *threadF(void *arg) {
             free(str.str);
             break;
         }
+        printf("str: %s\n",str.str);
         toup(str);
         if ((n=write(connfd, str.str, str.len*sizeof(char))) ==-1) {
             perror("write2");
@@ -75,6 +76,7 @@ void *threadF(void *arg) {
             break;
         }
         free(str.str);
+        str.len=0;
     }while(1);
     close(connfd);
     return NULL;
