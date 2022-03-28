@@ -418,6 +418,6 @@ int main(){
 	}
 	close(accept_socket);
 	unlink(SOCKETNAME);
-	printf("Arrivederci\n");
+	printf("FINE DEL SERVER\n");
 	return 0;
 }

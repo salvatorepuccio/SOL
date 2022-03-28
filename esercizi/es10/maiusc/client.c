@@ -34,90 +34,124 @@ static void sighandler (int sig) {
 	}
 }
 
-
-
-char* enlarge(char* enlargeme,int dim){
+void enlarge(char** enlargeme,int dim){
+	//printf("enlarge '%s'\n with size: %ld new size: %d",*enlargeme,strlen(*enlargeme),dim);
 	char *new_bigger;
-	new_bigger=malloc(dim*2);
-	strcpy(new_bigger,enlargeme);
-	free(enlargeme);
-	return new_bigger;
+	new_bigger=malloc(dim);
+	strncpy(new_bigger,*enlargeme,strlen(*enlargeme));
+	//strtok(new_bigger,"\n");
+	//free(enlargeme);
+	*enlargeme = new_bigger;
+
 }
 
-void *monitor_connection(void* arg){
-	printf("[MONITOR] Attivo\n");
-	int fd = ((arg_t*)arg)->connfd;
-	int *mypipe = ((arg_t*)arg)->pipe;
-	int termina=0,error,retval;
-	socklen_t len = sizeof(error);
+int cpystore(char** paste, char* copy){
+	int len;
 
-	while(termina==0){
-		error=0;
-		retval = getsockopt (fd, SOL_SOCKET, SO_ERROR, &error, &len);
-		if (error != 0) {
-			/* socket has a non zero error status */
-			printf("[MONITOR] Socket chiusa lato server, spegniamoci\n");
-			char *buffer = malloc(5);
-			strncpy(buffer,"EXIT",5);
-			write(mypipe[1],buffer,5);
-			free(buffer);
-			termina=1;
-		}
+	if(*paste == NULL){
+		//printf("paste == NULL\n");
+		len = strlen(copy)+80;
+		*paste = malloc(sizeof(char)*len);
 	}
-	printf("[MONITOR] exit\n");
-	return (void*)0;
+	else{
+		//printf("chiamo enlarge\n");
+		len = strlen(*paste)+80;
+		enlarge(paste,len);
+		//printf("paste post enlarge: '%s' \n",*paste);
+	}
+	
+	strncat(*paste,copy,strlen(copy));
+	//printf("paste dopo: '%s' \n",*paste);
+	return len;
 }
+
+
+
 
 void *text_service(void* arg){
 
 	int myconnfd = ((arg_t*)arg)->connfd;
 	int *mypipe = ((arg_t*)arg)->pipe;
-	int n,dim=80,realdim=0;
-    char *buff=malloc(dim),*temp=NULL,*buff2=NULL;
-
-
+	int dim=80;
 
 	fd_set current_sockets, read_ready_sockets;
 
 	FD_ZERO(&current_sockets);
-	//FD_SET(myconnfd,&current_sockets);
 	FD_SET(mypipe[0],&current_sockets);
 	FD_SET(STDIN_FILENO,&current_sockets);
-	int ret_select,fd;
+
+	int ret_select,fd,res;
 	int quitflag=0;
+
+	//printf("Inserisci una stringa: ");
 	for (;;) {
 		read_ready_sockets=current_sockets;		
 		//printf("[CH]select....\n");
-		if((ret_select=select(100,&read_ready_sockets,NULL,NULL,NULL))<0) {
-			if(quitflag==0){
+		
+		if(sigint == 1 | (ret_select=select(100,&read_ready_sockets,NULL,NULL,NULL))<0) {
+			if(sigint == 1){
+				break;
+			}
+			else{
+				//errore della select
 				perror("select");
 				exit(EXIT_FAILURE);
 			}
-			else break;
 		}
 		else{
+
+			char *buffer=malloc(dim*sizeof(char));
 			for (fd = 0;fd <= 100;fd++) {
 				if(FD_ISSET(fd,&read_ready_sockets)) {
-					char *buffer=malloc(80);
-
 					if(fd == myconnfd){//risposta dal server
-						read(myconnfd,buffer,80);
-						int l = strlen(buffer);
-						printf("Risposta: '%s' len %d\n",buffer,l);
-						sleep(1);
+						bzero(buffer,dim);
+						if(read(myconnfd,buffer,dim) == 0){
+							//sono arrivati 0 caratteri, server shutdown
+							quitflag=1;
+							break;
+						}
+						strtok(buffer,"\n");
+						printf("Risposta: %s\n\n",buffer);
+						//printf("Inserisci una stringa: ");
 						FD_SET(STDIN_FILENO,&current_sockets);
+						dim=80;
+						//printf("Ho reimpostato la dimensione del buffer\n");	
 					}
 
 					if(fd == STDIN_FILENO){//input da tastiera
-						read(STDIN_FILENO,buffer,80);
-						printf("Hai inserito: '%s'\n",buffer);
-						int len = strlen(buffer);
-						char lench[4];
-						sprintf(lench,"%d",len);
-						write(myconnfd,lench,4);
 
-						write(myconnfd,buffer,len);
-						FD_SET(myconnfd,&current_sockets);
+						bzero(buffer,dim);
+						if(read(STDIN_FILENO,buffer,dim) > 1){
+							if(strstr(buffer,"\n") == NULL){
+								char *buffer2=NULL;
+								do{
+									//printf("un ciclo\n");
+									cpystore(&buffer2,buffer);
+									//printf("buffer2: %s\n",buffer2);
+									//strtok(buffer2,"\n");
+									bzero(buffer,dim);
+									read(STDIN_FILENO,buffer,dim);
+								}while(strstr(buffer,"\n") == NULL);
+								cpystore(&buffer2,buffer);
+								//free(buffer);
+								buffer=buffer2;
+								//printf("fine ciclo buffer2: %s\n",buffer2);
+							}
+							
+						
+							strtok(buffer,"\n");
+							//printf("Hai inserito: '%s'\n",buffer);
+							dim = strlen(buffer);
+							//printf("len %d\n",dim);
+							char lench[4];
+							sprintf(lench,"%d",dim);
+							//printf("scrivo lench %s\n",lench);
+							write(myconnfd,lench,4);
+
+							//printf("scrivo buffer");
+							write(myconnfd,buffer,dim);
+							FD_SET(myconnfd,&current_sockets);
+						}
 					}
 
 					if(fd == mypipe[0]){//messaggio dal thread di monitoraggio connessione
@@ -129,47 +163,8 @@ void *text_service(void* arg){
 					free(buffer);
 				}
 			}
+			if(quitflag==1)break;
 		}
-		// bzero(buff, dim);
-		// printf("Inserisci la stringa : ");
-		// n = 0;
-		// while ((buff[n++] = getchar()) != '\n'){
-        //     if(n>=dim){
-        //         //allargo
-        //         buff = enlarge(buff,dim);
-		// 		dim=dim*2;
-        //     }
-        // }
-		// if(n==1){
-		// 	//ha soltanto premuto invio senza scrivere nulla
-		// 	//non mandare "\n" al server
-		// 	continue;
-		// }
-
-		// //printf("n: %d\n",n);
-
-		// printf("Hai scritto questo: %s\n",buff);
-
-		// realdim = strlen(buff);
-		// char realdim_char[4];
-		// sprintf(realdim_char,"%d",realdim);
-		// //printf("Mando la dimensione al server: %s\n",realdim_char);
-		// //printf("AU\n");
-		// write(sockfd,realdim_char,4);
-		// strtok(buff,"\n");
-		// //printf("Mando la stringa al server: %s\n");
-		// write(sockfd, buff, realdim);
-
-        // if (strncmp("quit", buff, 4) == 0) {
-		// 	close(sockfd);
-		// 	printf("ESCO per quit\n");
-		// 	free(buff);
-		// 	break;
-		// }
-
-		// bzero(buff, dim);
-		// read(sockfd, buff, dim);
-		// printf("\nRisposta : %s\n\n", buff);
 	}
 	printf("Fuori dal for\n");
 	close(myconnfd);
@@ -262,14 +257,16 @@ int main(){
 		exit(EXIT_FAILURE);
 	}
 
-	if(pthread_create(&monTh,NULL,monitor_connection,&payload)<0){
-		perror("creating thread monitor");
-		exit(EXIT_FAILURE);
-	}
+	// if(pthread_create(&monTh,NULL,monitor_connection,&payload)<0){
+	// 	perror("creating thread monitor");
+	// 	exit(EXIT_FAILURE);
+	// }
 
 	pthread_join(tsTh,NULL);
-	pthread_join(monTh,NULL);
-	// close the socket
+	//pthread_join(monTh,NULL);
+
 	close(client_socket);
+	unlink(SOCKETNAME);
+	printf("FINE DEL CLIENT\n");
 	return 0;
 }

@@ -19,14 +19,14 @@ client.o:
 
 .PHONY: cleanall
 
-server: server.o
+s: server.o
 		./server.o
 
-client: client.o
+c: client.o
 		./client.o
 		
 
-cleanall: 
+cl: 
 	-rm -f *.o *.a *.out *.txt
 	-rm -r *.dSYM
 	-rm -f mysocket
