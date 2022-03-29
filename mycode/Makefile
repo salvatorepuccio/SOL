@@ -1,20 +1,23 @@
 CC =  gcc
 CFLAGS += -std=c99 -Wall -g
-TARGETS = prova
+TARGET = prova
+
 
 HEADERS_DIR = ./includes/
 OBJ_DIR = ./obj/
 PROJ_DIR = ./test/
 LIBS_DIR = ./myutils/
 
-normal: $(TARGETS)
+normal: $(TARGET)
 
 
-$(PROJ_DIR)/obj/test.o: my_lib.a
-	$(CC) $(CFLAGS) server.c -L. -lmy_lib -o server.o -lpthread
+$(PROJ_DIR)/$(OBJ_DIR)/$(TARGET).o: my_lib.a
+	$(CC) $(CFLAGS) $(TARGET).c -L. -lmy_lib -o $(TARGET).o -lpthread
+	@mv $(TARGET).o $(OBJ_DIR)/$(TARGET).o
 
-my_lib.a: myutils.o
-	ar rvs libmy_lib.a id.o	
+$(LIBS_DIR)/my_lib.a: myutils.o
+	ar rvs libmy_lib.a myutils.o
+	@mv $(TARGET).o $(OBJ_DIR)/my_lib.a
 
 utils.o: 
 	$(CC) -c utils.c
