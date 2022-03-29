@@ -1,47 +1,85 @@
 CC =  gcc
 CFLAGS += -std=c99 -Wall -g
-TARGET = prova
+INCLUDES = -I ./includes/
+ 
+
+OBJ_DIR = ./obj
+LIBS_DIR = ./mylibs
+
+SRC_DIR = ./srcmaiusc#<----------modificami ma non lasciare spazi prima del #
+
+TARGETS = $(OBJ_DIR)/server.o $(OBJ_DIR)/client.o
 
 
-HEADERS_DIR = ./includes/
-OBJ_DIR = ./obj/
-PROJ_DIR = ./test/
-LIBS_DIR = ./myutils/
+normal: $(TARGETS)
 
-normal: $(TARGET)
+#COMPILAZIONE--------------------------.c-------------------------------------------------
+#$(OBJ_DIR)/$(TARGET).o: $(LIBS_DIR)/my_lib.a
+#	$(CC) $(CFLAGS) $(INCLUDES) $(SRC_DIR)/$(TARGET).c -L$(OBJ_DIR) -lmy_lib -o $(TARGET).o
+#	@mv $(TARGET).o $(OBJ_DIR)/$(TARGET).o
+#	@mv $(TARGET).o.dSYM $(OBJ_DIR)/$(TARGET).o.dSYM
+
+$(OBJ_DIR)/server.o: $(LIBS_DIR)/my_lib.a
+	$(CC) $(CFLAGS) $(INCLUDES) $(SRC_DIR)/server.c -L$(OBJ_DIR) -lmy_lib -o server.o
+	@mv server.o $(OBJ_DIR)/server.o
+	@mv server.o.dSYM $(OBJ_DIR)/server.o.dSYM
+
+$(OBJ_DIR)/client.o: $(LIBS_DIR)/my_lib.a
+	$(CC) $(CFLAGS) $(INCLUDES) $(SRC_DIR)/client.c -L$(OBJ_DIR) -lmy_lib -o client.o
+	@mv client.o $(OBJ_DIR)/client.o
+	@mv client.o.dSYM $(OBJ_DIR)/client.o.dSYM
+#COMPILAZIONE--------------------------.c-------------------------------------------------
 
 
-$(PROJ_DIR)/$(OBJ_DIR)/$(TARGET).o: my_lib.a
-	$(CC) $(CFLAGS) $(TARGET).c -L. -lmy_lib -o $(TARGET).o -lpthread
-	@mv $(TARGET).o $(OBJ_DIR)/$(TARGET).o
 
-$(LIBS_DIR)/my_lib.a: myutils.o
-	ar rvs libmy_lib.a myutils.o
-	@mv $(TARGET).o $(OBJ_DIR)/my_lib.a
 
-utils.o: 
-	$(CC) -c utils.c
 
-client.o:
-	$(CC) $(CFLAGS) client.c -o client.o
+#LIBRERIA------------------------------.a---------------------------------------------
+$(LIBS_DIR)/my_lib.a: stringsmanager.o id.o
+	ar rvs libmy_lib.a stringsmanager.o id.o
+	@mv libmy_lib.a $(OBJ_DIR)/libmy_lib.a
+#	@mv stringsmanager.o $(OBJ_DIR)/stringsmanager.o
+	rm -f *.o
 
-.PHONY: cleanall
+stringsmanager.o:
+	$(CC) -c $(LIBS_DIR)/stringsmanager.c
 
-s: server.o
-		./server.o
+id.o:
+	$(CC) -c $(LIBS_DIR)/id.c
 
-c: client.o
-		./client.o
-		
+#LIBRERIA-------------------------------.a--------------------------------------------
 
-cl: 
-	-rm -f *.o *.a *.out *.txt
-	-rm -r *.dSYM
-	-rm -f mysocket
 
+
+
+
+#ESECUZIONE----------------------------.o-----------------------------------------------
+run:
+	$(OBJ_DIR)/$(TARGET).o
+
+s:
+	$(OBJ_DIR)/server.o
+
+c: 
+	$(OBJ_DIR)/client.o
+
+#ESECUZIONE----------------------------.o-----------------------------------------------
+	
+
+.PHONY: cleanall clean
 .SUFFIXES: .c .h
 
-all	:
+clean:
+	-rm -f  $(OBJ_DIR)/*.o
+	-rm -r $(OBJ_DIR)/*.dSYM
+	-rm -f $(OBJ_DIR)/*.a
+	-rm -f *.a *.o *.txt *.out mysocket
+	-rm -r *.dSYM
 
-clean		: 
-	-rm -f $(TARGETS)
+cleanall: 
+	-rm -f *.o *.a *.out *.txt mysocket
+	-rm -r *.dSYM
+	-rm -f *.a
+
+
+

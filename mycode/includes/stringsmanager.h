@@ -1,5 +1,7 @@
+#ifndef _STRINGSMANAGER_H_
+#define _STRINGSMANAGER_H_
 
-
+#include <stdlib.h>
 
 
 /**
@@ -28,6 +30,8 @@ int enlarge(char** target,int dim);
  * @param target parte 1
  * @param copy parte 2
  * @param oversize la dimensione libera che vogliamo alla fine dell'array
- * @return int 
+ * @return int la dimensione dell'array -> tutta la dimensione lo spazio non occupato a dx (!=strlen)
  */
 int mystrcat(char** target, char* b, int oversize);
+
+#endif

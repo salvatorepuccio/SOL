@@ -5,7 +5,8 @@
         "time.h": "c",
         "inet.h": "c",
         "istream": "c",
-        "ostream": "c"
+        "ostream": "c",
+        "stringsmanager.h": "c"
     },
     "editor.selectionClipboard": false
 }

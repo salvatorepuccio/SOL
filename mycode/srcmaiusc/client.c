@@ -67,6 +67,25 @@ int cpystore(char** paste, char* copy){
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 void *text_service(void* arg){
 
 	int myconnfd = ((arg_t*)arg)->connfd;
@@ -87,8 +106,8 @@ void *text_service(void* arg){
 		read_ready_sockets=current_sockets;		
 		//printf("[CH]select....\n");
 		
-		if(terminazione == 1 | (ret_select=select(100,&read_ready_sockets,NULL,NULL,NULL))<0) {
-			if(terminazione == 1){
+		if((ret_select=select(100,&read_ready_sockets,NULL,NULL,NULL))<0 | quitflag == 1) {
+			if(quitflag == 1){
 				break;
 			}
 			else{
@@ -106,6 +125,7 @@ void *text_service(void* arg){
 						bzero(buffer,dim);
 						if(read(myconnfd,buffer,dim) == 0){
 							//sono arrivati 0 caratteri, server shutdown
+							printf("dal server una stringa vuota\n");
 							quitflag=1;
 							break;
 						}
@@ -155,8 +175,9 @@ void *text_service(void* arg){
 
 					if(fd == mypipe[0]){//messaggio dal thread di monitoraggio connessione
 						read(mypipe[0],buffer,80);
-						printf("mypipe[0]: '%s'\n",buffer);
+						printf("il Main mi ha detto di uscire: '%s'\n",buffer);
 						quitflag=1;
+						close(myconnfd);
 						break;
 					}
 					free(buffer);
@@ -165,11 +186,34 @@ void *text_service(void* arg){
 			if(quitflag==1)break;
 		}
 	}
-	printf("Fuori dal for\n");
+	printf("Fuori dal for: quitflag: %d terminazione: %d\n",quitflag,terminazione);
 	close(myconnfd);
 	//printf("fine\n");
 	return (void*)0;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 int main(){
 
@@ -241,8 +285,8 @@ int main(){
 
 	//CONNESSIONE----------------------------------------------------------------
 	if (connect(client_socket, (SA*)&servaddr, sizeof(servaddr)) != 0) {
-		perror("connessione con il server\n");
-		unlink(SOCKETNAME);
+		perror("ERR connessione con il server\n");
+		//unlink(SOCKETNAME);
 		exit(EXIT_FAILURE);
 	}
 	printf("Connesso al server..\n");
@@ -261,11 +305,18 @@ int main(){
 	// 	exit(EXIT_FAILURE);
 	// }
 
+	while(terminazione == 0){
+		;
+	}
+
+	//dico al thread text_service di terminare
+	write(mypipe[1],"EXIT",5);
+
 	pthread_join(tsTh,NULL);
 	//pthread_join(monTh,NULL);
 
 	close(client_socket);
-	unlink(SOCKETNAME);
+	//unlink(SOCKETNAME);
 	printf("FINE DEL CLIENT\n");
 	return 0;
 }
