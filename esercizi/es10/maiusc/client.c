@@ -42,7 +42,6 @@ void enlarge(char** enlargeme,int dim){
 	//strtok(new_bigger,"\n");
 	//free(enlargeme);
 	*enlargeme = new_bigger;
-
 }
 
 int cpystore(char** paste, char* copy){
