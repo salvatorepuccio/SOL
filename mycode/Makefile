@@ -3,10 +3,12 @@ CFLAGS += -std=c99 -Wall -g -D_POSIX_SOURCE
 INCLUDES = -I ./includes/
  
 
-OBJ_DIR = ./obj
-LIBS_DIR = ./mylibs
+OBJ_DIR := ./obj
+LIBS_DIR := ./mylibs
 
 SRC_DIR = ./srcmaiusc#<----------modificami ma non lasciare spazi prima del #
+
+.DEFAULT_GOAL := all
 
 TARGETS = $(OBJ_DIR)/server.o $(OBJ_DIR)/client.o
 
@@ -14,6 +16,7 @@ TARGETS = $(OBJ_DIR)/server.o $(OBJ_DIR)/client.o
 normal: $(TARGETS)
 
 #COMPILAZIONE--------------------------.c-------------------------------------------------
+
 #$(OBJ_DIR)/$(TARGET).o: $(LIBS_DIR)/my_lib.a
 #	$(CC) $(CFLAGS) $(INCLUDES) $(SRC_DIR)/$(TARGET).c -L$(OBJ_DIR) -lmy_lib -o $(TARGET).o
 #	@mv $(TARGET).o $(OBJ_DIR)/$(TARGET).o
@@ -81,5 +84,5 @@ cleanall:
 	-rm -r *.dSYM
 	-rm -f *.a
 
-
+all: $(TARGETS)
 
