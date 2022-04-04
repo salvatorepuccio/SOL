@@ -28,10 +28,12 @@ int enlarge(char** target,int dim);
  * @example mystrcat(&target, b,5); //target = [a,a,a,a,,] b=[b,b] // target = [a,a,a,a,b,b,,,,,,]
  * 
  * @param target parte 1
- * @param copy parte 2
+ * @param source parte 2
  * @param oversize la dimensione libera che vogliamo alla fine dell'array
  * @return int la dimensione dell'array -> tutta la dimensione lo spazio non occupato a dx (!=strlen)
  */
-int mystrcat(char** target, char* b, int oversize);
+int mystrcat(char** target, char* source, int oversize,int log);
 
 #endif
+
+

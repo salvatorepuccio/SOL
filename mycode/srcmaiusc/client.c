@@ -16,6 +16,7 @@
 #include <errno.h>
 #include <signal.h>
 #include <pthread.h>
+#include "stringsmanager.h"
 
 #define SA struct sockaddr
 #define SOCKETNAME "./mysocket"
@@ -34,35 +35,7 @@ static void sighandler (int sig) {
 	}
 }
 
-void enlarge(char** enlargeme,int dim){
-	//printf("enlarge '%s'\n with size: %ld new size: %d",*enlargeme,strlen(*enlargeme),dim);
-	char *new_bigger;
-	new_bigger=malloc(dim);
-	strncpy(new_bigger,*enlargeme,strlen(*enlargeme));
-	//strtok(new_bigger,"\n");
-	//free(enlargeme);
-	*enlargeme = new_bigger;
-}
 
-int cpystore(char** paste, char* copy){
-	int len;
-
-	if(*paste == NULL){
-		//printf("paste == NULL\n");
-		len = strlen(copy)+80;
-		*paste = malloc(sizeof(char)*len);
-	}
-	else{
-		//printf("chiamo enlarge\n");
-		len = strlen(*paste)+80;
-		enlarge(paste,len);
-		//printf("paste post enlarge: '%s' \n",*paste);
-	}
-	
-	strncat(*paste,copy,strlen(copy));
-	//printf("paste dopo: '%s' \n",*paste);
-	return len;
-}
 
 
 
@@ -102,9 +75,9 @@ void *text_service(void* arg){
 	int quitflag=0;
 
 	//printf("Inserisci una stringa: ");
+
 	for (;;) {
 		read_ready_sockets=current_sockets;		
-		//printf("[CH]select....\n");
 		
 		if((ret_select=select(100,&read_ready_sockets,NULL,NULL,NULL))<0 | quitflag == 1) {
 			if(quitflag == 1){
@@ -121,7 +94,9 @@ void *text_service(void* arg){
 			char *buffer=malloc(dim*sizeof(char));
 			for (fd = 0;fd <= 100;fd++) {
 				if(FD_ISSET(fd,&read_ready_sockets)) {
-					if(fd == myconnfd){//risposta dal server
+
+					//MSG DAL SERVER------------------------------------------------------
+					if(fd == myconnfd){
 						bzero(buffer,dim);
 						if(read(myconnfd,buffer,dim) == 0){
 							//sono arrivati 0 caratteri, server shutdown
@@ -129,66 +104,55 @@ void *text_service(void* arg){
 							quitflag=1;
 							break;
 						}
-						strtok(buffer,"\n");
-						printf("Risposta: %s\n\n",buffer);
+						//strtok(buffer,"\n");
+						printf("Risposta: %s\n",buffer);
 						//printf("Inserisci una stringa: ");
 						FD_SET(STDIN_FILENO,&current_sockets);
 						dim=80;
 						//printf("Ho reimpostato la dimensione del buffer\n");	
 					}
-
-					if(fd == STDIN_FILENO){//input da tastiera
-
-						bzero(buffer,dim);
+					
+					//-----------------------------INPUT DA TASTIERA---------------------------
+					else if(fd == STDIN_FILENO){//input da tastiera
+						printf("input da tastiera\n");
+						//bzero(buffer,dim);
 						if(read(STDIN_FILENO,buffer,dim) > 1){
+							char *buffer2=NULL;
 							if(strstr(buffer,"\n") == NULL){
-								char *buffer2=NULL;
 								do{
-									//printf("un ciclo\n");
-									cpystore(&buffer2,buffer);
-									//printf("buffer2: %s\n",buffer2);
-									//strtok(buffer2,"\n");
+									printf("buffer: '%s'\n");
+									mystrcat(&buffer2,buffer,0,1);
 									bzero(buffer,dim);
 									read(STDIN_FILENO,buffer,dim);
 								}while(strstr(buffer,"\n") == NULL);
-								cpystore(&buffer2,buffer);
-								//free(buffer);
 								buffer=buffer2;
-								//printf("fine ciclo buffer2: %s\n",buffer2);
 							}
 							
-						
 							strtok(buffer,"\n");
-							//printf("Hai inserito: '%s'\n",buffer);
 							dim = strlen(buffer);
-							//printf("len %d\n",dim);
 							char lench[4];
 							sprintf(lench,"%d",dim);
-							//printf("scrivo lench %s\n",lench);
 							write(myconnfd,lench,4);
-
-							//printf("scrivo buffer");
 							write(myconnfd,buffer,dim);
 							FD_SET(myconnfd,&current_sockets);
 						}
 					}
 
-					if(fd == mypipe[0]){//messaggio dal thread di monitoraggio connessione
+					//-------------------------------PIPE-------------------------------
+					else if(fd == mypipe[0]){
 						read(mypipe[0],buffer,80);
-						printf("il Main mi ha detto di uscire: '%s'\n",buffer);
 						quitflag=1;
 						close(myconnfd);
 						break;
 					}
-					free(buffer);
 				}
 			}
+			free(buffer);
 			if(quitflag==1)break;
 		}
 	}
-	printf("Fuori dal for: quitflag: %d terminazione: %d\n",quitflag,terminazione);
 	close(myconnfd);
-	//printf("fine\n");
+	terminazione=1;
 	return (void*)0;
 }
 
@@ -292,18 +256,13 @@ int main(){
 	printf("Connesso al server..\n");
 	//----------------------------------------------------------------
 
-	pthread_t tsTh,monTh;
+	pthread_t tsTh;
 	arg_t payload = {client_socket,mypipe};
 
 	if(pthread_create(&tsTh,NULL,text_service,&payload)<0){
 		perror("creating thread text service");
 		exit(EXIT_FAILURE);
 	}
-
-	// if(pthread_create(&monTh,NULL,monitor_connection,&payload)<0){
-	// 	perror("creating thread monitor");
-	// 	exit(EXIT_FAILURE);
-	// }
 
 	while(terminazione == 0){
 		;
@@ -313,10 +272,9 @@ int main(){
 	write(mypipe[1],"EXIT",5);
 
 	pthread_join(tsTh,NULL);
-	//pthread_join(monTh,NULL);
 
 	close(client_socket);
-	//unlink(SOCKETNAME);
-	printf("FINE DEL CLIENT\n");
+	free(mypipe);
+	//printf("FINE DEL CLIENT\n");
 	return 0;
 }

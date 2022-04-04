@@ -143,26 +143,29 @@ void* client_holder(void* arg){
 			//printf("[CH]select a buon fine\n");
 			for (fd = 0;fd <= 100;fd++) {
 				if(FD_ISSET(fd,&read_ready_sockets)) {
-					if(fd == myconnfd){//richiesta da servire
+					//-------------------------------RICHIESTA CLIENT-------------------------------
+					if(fd == myconnfd){
+					//-------------------------------ARRIVATA DIMENSIONE-------------------------------
 						if(toread == -1){
-							//devo leggere la dimensione
 							read(myconnfd, size, 4);
 							toread = atoi(size);
 							printf("[CH] Dimensione del prossimo messaggio: %d\n",toread);
 							FD_SET(myconnfd,&current_sockets);
 						}
+						//-------------------------------ARRIVATA STRINGA-------------------------------
 						else {
-							//devo leggere la stringa
 							char *buff = malloc(toread);
 							bzero(buff, toread);
 							read(myconnfd, buff, toread);
 							printf("[CH] ricevuto: '%s'\n",buff);
+							//-------------QUIT->CHIUDI CLIENT------------------
 							if (strncmp("quit", buff, 4) == 0) {
 								printf("Client %d ha chiesto di chiudere la connessione\n",my_id);
 								free(buff);
 								quitflag=1;
 								break;
 							}
+							//-------VUOTA->CHIUDI CLIENT (GIA' CHIUSO)---------
 							if(strcmp("",buff) == 0){
 								//arrivata una stringa vuota
 								printf("arrivata una stringa vuota, ignoro\n");
@@ -172,10 +175,8 @@ void* client_holder(void* arg){
 								free(buff);
 								continue;
 							}
-							
-							printf("\nsono dopo il continue\n");
 
-							//non era un quit, allora rispondo
+							//--------------STRINGA REGOLARE--------------------
 							char *upper=NULL;
 							if (strncmp("my_id", buff, 5) == 0) {
 								toread=17;
@@ -191,9 +192,11 @@ void* client_holder(void* arg){
 							free(upper);
 							toread=-1;
 							FD_SET(myconnfd,&current_sockets);
-						}		
+						}
+					//-------------------------------
+							
 					}
-
+					//-------------------------------PIPE-------------------------------
 					else if(fd == mypipe[0]){
 						//dobbiamo terminare
 						char *buff = malloc(sizeof(char)*5);

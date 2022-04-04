@@ -15,17 +15,34 @@ int enlarge(char** enlargeme,int dim){
 }
 
 
-int mystrcat(char** paste, char* copy, int oversize){
-	int len;
+int mystrcat(char** target, char* source, int oversize,int log){
+	if(source==NULL) return -1;
 
-	if(*paste == NULL){
-		len = strlen(copy)+oversize;
-		*paste = malloc(sizeof(char)*len);
+	int len=-1,targetL=-1,sourceL=-1;
+	char *target_original;
+	sourceL = strlen(source);
+
+	if(*target == NULL){
+		target_original = malloc(5);
+		strcpy(target_original,"null");
+		targetL=0;
+		len = strlen(source)+1+oversize;
+		*target = malloc(sizeof(char)*len);
 	}
 	else{
-		len = strlen(*paste)+strlen(copy)+oversize;
-		enlarge(paste,len);
+		target_original=malloc(strlen(*target));
+		strcpy(target_original,*target);
+		targetL = strlen(*target);
+		len = targetL+sourceL+oversize;
+		enlarge(target,len);
 	}
-	strncat(*paste,copy,strlen(copy));
+
+	strncat(*target,source,sourceL);
+
+	if(log==1) printf("[*]\tYou called mystrcat(target,source,%d) w/: \
+	\n[*]\ttarget: '%s' [%d] \
+	\n[*]\tsource: '%s'  [%d] \
+	\n[*]\ttarget (new): '%s' [%d]\n",oversize,target_original,targetL,source,sourceL,*target,len);
+	
 	return len;
 }
