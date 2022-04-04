@@ -9,7 +9,7 @@
 //MODIFICA: installare un signal handler, ignorare SIGPIPE e gestire SIGINT/QUIT/HUP/TERM con una terminazione graceful
 //ovvero liberando la memoria allocata per non avere errori o memory leak
 //testare tutto con valgrind --leak-cheack=full
-
+#define _POSIX_SOURCE
 #include <stdio.h>
 #include <netdb.h>
 #include <netinet/in.h>
@@ -272,7 +272,7 @@ int main(){
 		}	
 	}
 	else{
-		printf("[S]lim sup pipe = %ld\n",v);
+		//printf("[S]lim sup pipe = %ld\n",v);
 	}
 
 	

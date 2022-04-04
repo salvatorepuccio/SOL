@@ -20,12 +20,12 @@ normal: $(TARGETS)
 #	@mv $(TARGET).o.dSYM $(OBJ_DIR)/$(TARGET).o.dSYM
 
 $(OBJ_DIR)/server.o: $(LIBS_DIR)/my_lib.a
-	$(CC) $(CFLAGS) $(INCLUDES) $(SRC_DIR)/server.c -L$(OBJ_DIR) -lmy_lib -o server.o
+	$(CC) $(CFLAGS) $(INCLUDES) $(SRC_DIR)/server.c -L$(OBJ_DIR) -lmy_lib -o server.o -lpthread
 	@mv server.o $(OBJ_DIR)/server.o
 	@mv server.o.dSYM $(OBJ_DIR)/server.o.dSYM
 
 $(OBJ_DIR)/client.o: $(LIBS_DIR)/my_lib.a
-	$(CC) $(CFLAGS) $(INCLUDES) $(SRC_DIR)/client.c -L$(OBJ_DIR) -lmy_lib -o client.o
+	$(CC) $(CFLAGS) $(INCLUDES) $(SRC_DIR)/client.c -L$(OBJ_DIR) -lmy_lib -o client.o -lpthread
 	@mv client.o $(OBJ_DIR)/client.o
 	@mv client.o.dSYM $(OBJ_DIR)/client.o.dSYM
 #COMPILAZIONE--------------------------.c-------------------------------------------------
