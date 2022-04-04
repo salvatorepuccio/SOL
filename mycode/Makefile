@@ -10,10 +10,7 @@ SRC_DIR = ./srcmaiusc#<----------modificami ma non lasciare spazi prima del #
 
 .DEFAULT_GOAL := all
 
-#TARGETS = $(OBJ_DIR)/server.o $(OBJ_DIR)/client.o
-
-TARGETS = server client
-
+TARGETS = $(OBJ_DIR)/server.o $(OBJ_DIR)/client.o
 
 
 normal: $(TARGETS)
@@ -26,14 +23,14 @@ normal: $(TARGETS)
 #	@mv $(TARGET).o.dSYM $(OBJ_DIR)/$(TARGET).o.dSYM
 
 $(OBJ_DIR)/server.o: $(LIBS_DIR)/my_lib.a
-	$(CC) $(CFLAGS) -c $(INCLUDES) $(SRC_DIR)/server.c -L$(OBJ_DIR) -lmy_lib -o server.o -lpthread
+	$(CC) $(CFLAGS) $(INCLUDES) $(SRC_DIR)/server.c -L$(OBJ_DIR) -lmy_lib -o server.o -lpthread
 	@mv server.o $(OBJ_DIR)/server.o
-#	@mv server.o.dSYM $(OBJ_DIR)/server.o.dSYM
+	@mv server.o.dSYM $(OBJ_DIR)/server.o.dSYM
 
 $(OBJ_DIR)/client.o: $(LIBS_DIR)/my_lib.a
-	$(CC) $(CFLAGS) -c $(INCLUDES) $(SRC_DIR)/client.c -L$(OBJ_DIR) -lmy_lib -o client.o -lpthread
+	$(CC) $(CFLAGS) $(INCLUDES) $(SRC_DIR)/client.c -L$(OBJ_DIR) -lmy_lib -o client.o -lpthread
 	@mv client.o $(OBJ_DIR)/client.o
-#	@mv client.o.dSYM $(OBJ_DIR)/client.o.dSYM
+	@mv client.o.dSYM $(OBJ_DIR)/client.o.dSYM
 #COMPILAZIONE--------------------------.c-------------------------------------------------
 
 
@@ -63,13 +60,11 @@ id.o:
 run:
 	$(OBJ_DIR)/$(TARGET).o
 
-server: server.o
-#	$(OBJ_DIR)/server.o
-$(CC) $(CFLAGS) -o $(BUILD_DIR)/server $(OBJS-CLIENT) $(LIBS)
+s:
+	$(OBJ_DIR)/server.o
 
-client: client.o
-#	$(OBJ_DIR)/client.o
-	$(CC) $(CFLAGS) -o $(BUILD_DIR)/client $(OBJS-CLIENT) $(LIBS)
+c: 
+	$(OBJ_DIR)/client.o
 
 #ESECUZIONE----------------------------.o-----------------------------------------------
 	
