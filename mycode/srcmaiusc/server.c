@@ -27,7 +27,7 @@
 #include <sys/select.h>
 #include <sys/un.h>
 #include <errno.h>
-#include "id.h"
+//#include "id.h"
 #include <signal.h>
 #include <sys/time.h>
 
@@ -35,13 +35,14 @@
 #define SOCKETNAME "./mysocket"
 
 
-Idgenerator_t *generator=NULL;
+//Idgenerator_t *generator=NULL;
 
 
 //lista dei thread
 typedef struct Listath{
 	pthread_t thread;
 	int connfd;
+	int id;
 	int status;
 	struct Listath *next;
 }Listath_t;
@@ -50,6 +51,7 @@ typedef struct Listath{
 typedef struct arg{
 	int connfd;
 	int *pipe;
+	int id;
 }arg_t;
 
 
@@ -115,8 +117,9 @@ void* client_holder(void* arg){
 
 	int myconnfd = ((arg_t*)arg)->connfd;
 	int *mypipe = ((arg_t*)arg)->pipe;
+	my_id = ((arg_t*)arg)->id;
 
-	my_id=getid(generator);
+	//my_id=getid(generator);
 
 	fd_set current_sockets, read_ready_sockets;
 
@@ -168,7 +171,7 @@ void* client_holder(void* arg){
 							//-------VUOTA->CHIUDI CLIENT (GIA' CHIUSO)---------
 							if(strcmp("",buff) == 0){
 								//arrivata una stringa vuota
-								printf("arrivata una stringa vuota, ignoro\n");
+								printf("Arrivata una stringa vuota, disconnesso\n");
 								close(myconnfd);
 								FD_CLR(myconnfd,&current_sockets);
 								toread=-1;
@@ -178,16 +181,18 @@ void* client_holder(void* arg){
 
 							//--------------STRINGA REGOLARE--------------------
 							char *upper=NULL;
-							if (strncmp("my_id", buff, 5) == 0) {
-								toread=17;
+							if (strncmp("__id", buff, 4) == 0) {
+								toread=16;
 								upper=malloc(toread);
-								snprintf(upper, toread, "your id is: %d",my_id);
-							}
-							else{
+								snprintf(upper, toread, "your id is %d",my_id);
+							} else{
 								upper=malloc(toread);
 								strtoupper(buff,toread,upper);
 							}
 							printf("[CH]Mando '%s' a %d\n",upper,my_id);
+							char lench[4];
+							sprintf(lench,"%d",toread);
+							write(myconnfd,lench,4);
 							write(myconnfd, upper, toread);
 							free(upper);
 							toread=-1;
@@ -216,6 +221,7 @@ void* client_holder(void* arg){
 		}
 	}
 	close(myconnfd);
+	sleep(2);
 	printf("[Thread]Fine thread %d\n",my_id);
 	return (void*)0;
 }
@@ -253,8 +259,8 @@ void* client_holder(void* arg){
 
 int main(){
 
-	if (system("clear")<0) 
-        perror ("system");
+	//if (system("clear")<0) 
+      //  perror ("system");
 	int *mypipe=malloc(sizeof(int)*2);
 	//pipe
 	if(pipe(mypipe)==-1){
@@ -309,7 +315,7 @@ int main(){
     
     
 
-	int accept_socket,connfd,len,err;
+	int accept_socket,connfd,len,err,id=0;
 	struct sockaddr_un servaddr, cli;
 	bzero(&servaddr, sizeof(servaddr));
 	servaddr.sun_family = AF_UNIX;
@@ -330,7 +336,7 @@ int main(){
 		exit(EXIT_FAILURE);
 	}
 
-	generator=init_id();
+	//generator=init_id();
 
 	//LISTEN
 	if ((listen(accept_socket, SOMAXCONN)) != 0) {
@@ -377,17 +383,17 @@ int main(){
 						//creare nuovo thread
 						if(head==NULL){
 							head = malloc(sizeof(Listath_t));
-							//printf("ho fatto una malloc\n");
 							current = head;
 						}
 						else{
-							//printf("ho fatto una malloc\n");
 							current->next = malloc(sizeof(Listath_t));
 							current = current->next;
 						}
 						current->connfd=connfd;
+						current->id = id;
 						current->next=NULL;
-						arg_t passme = {connfd,mypipe};
+						arg_t passme = {connfd,mypipe,id};
+						id++;
 						if((err=pthread_create(&current->thread,NULL,&client_holder,&passme))!=0){
 								//gestisci errore
 								perror("creazione thread per gestire client\n");
@@ -411,10 +417,11 @@ int main(){
 			Listath_t *tmp=NULL;
 			int i=0;
 			//se c'e' almeno un elemento
-			printf("Elemento n: %d, connfd: %d\n",i,head->connfd);
+			printf("Elemento n: %d, connfd: %d id: %d status: %d\n",i,head->connfd,head->id,head->status);
 			//dico a questo thread di terminare tramite pipe
 			write(mypipe[1],"EXIT",5);
-			pthread_join(head->thread,(void*) &head->status);close(head->connfd);
+			pthread_join(head->thread,(void*) &head->status);
+			//close(head->connfd);
 			printf("Thread terminato correttamente\n");
 			current=head;
 			while(current->next != NULL){
@@ -423,15 +430,16 @@ int main(){
 				current=current->next;
 				printf("free: %d\n",tmp->connfd);
 				free(tmp);
-				printf("Elemento n: %d, connfd: %d\n",i,current->connfd);
+				printf("Elemento n: %d, connfd: %d id: %d status: %d\n",i,current->connfd,current->id,current->status);
 				
-				pthread_join(current->thread,(void*) &current->status);close(current->connfd);
+				pthread_join(current->thread,(void*) &current->status);
+				//close(current->connfd);
 			}
 			printf("free: %d\n",current->connfd);
 			free(current);
 		}
-		printf("free: generator\n");
-		free(generator);
+		//printf("free: generator\n");
+		//free(generator);
 	}
 	close(accept_socket);
 	unlink(SOCKETNAME);

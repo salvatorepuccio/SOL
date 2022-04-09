@@ -30,7 +30,7 @@ static volatile sig_atomic_t terminazione = 0;
 
 static void sighandler (int sig) {
     if(sig == SIGINT){
-		//printf("SIGINT\n");
+		//printf("SIGINT\n");	
 		terminazione=1;
 	}
 }
@@ -72,12 +72,15 @@ void *text_service(void* arg){
 	FD_SET(STDIN_FILENO,&current_sockets);
 
 	int ret_select,fd,res;
-	int quitflag=0;
+	int quitflag=0,toread=-1;
+	char size[4];
 
 	//printf("Inserisci una stringa: ");
 
 	for (;;) {
-		read_ready_sockets=current_sockets;		
+		read_ready_sockets=current_sockets;	
+		//sleep(10);
+		
 		
 		if((ret_select=select(100,&read_ready_sockets,NULL,NULL,NULL))<0 | quitflag == 1) {
 			if(quitflag == 1){
@@ -94,37 +97,48 @@ void *text_service(void* arg){
 			char *buffer=malloc(dim*sizeof(char));
 			for (fd = 0;fd <= 100;fd++) {
 				if(FD_ISSET(fd,&read_ready_sockets)) {
-
+					
 					//MSG DAL SERVER------------------------------------------------------
 					if(fd == myconnfd){
+						if(toread == -1){
+							read(myconnfd, size, 4);
+							toread = atoi(size);
+							printf("[CH] Dimensione del prossimo messaggio: %d\n",toread);
+							FD_SET(myconnfd,&current_sockets);
+							continue;
+						}
 						bzero(buffer,dim);
-						if(read(myconnfd,buffer,dim) == 0){
+						if(read(myconnfd,buffer,toread) == 0){
 							//sono arrivati 0 caratteri, server shutdown
 							printf("dal server una stringa vuota\n");
 							quitflag=1;
 							break;
 						}
 						//strtok(buffer,"\n");
-						printf("Risposta: %s\n",buffer);
+						printf("Risposta: %s\n\n",buffer);
 						//printf("Inserisci una stringa: ");
 						FD_SET(STDIN_FILENO,&current_sockets);
 						dim=80;
+						toread=-1;
 						//printf("Ho reimpostato la dimensione del buffer\n");	
 					}
 					
 					//-----------------------------INPUT DA TASTIERA---------------------------
 					else if(fd == STDIN_FILENO){//input da tastiera
-						printf("input da tastiera\n");
+						//printf("input da tastiera\n");
 						//bzero(buffer,dim);
 						if(read(STDIN_FILENO,buffer,dim) > 1){
 							char *buffer2=NULL;
 							if(strstr(buffer,"\n") == NULL){
 								do{
-									printf("buffer: '%s'\n");
+									//printf("\nA CASO\n");
+									//printf("buffer: '%s'\n");
 									mystrcat(&buffer2,buffer,0,1);
 									bzero(buffer,dim);
 									read(STDIN_FILENO,buffer,dim);
-								}while(strstr(buffer,"\n") == NULL);
+								}while((strstr(buffer,"\n") == NULL));
+								mystrcat(&buffer2,buffer,0,1);
+								bzero(buffer,dim);
 								buffer=buffer2;
 							}
 							
@@ -193,9 +207,9 @@ int main(){
 			perror("limite sup pipe");
 			exit(EXIT_FAILURE);
 		}
-		else printf("la pipe ha lim sup illimitato\n");
+		//else printf("la pipe ha lim sup illimitato\n");
 	}
-	else printf("[S]lim sup pipe = %ld\n",v);
+	//else printf("[S]lim sup pipe = %ld\n",v);
 	//FINE----------------------------------------------------------------
 
 	//SEGNALI----------------------------------------------------------------
@@ -233,7 +247,7 @@ int main(){
 	int client_socket;
 	struct sockaddr_un servaddr, cli;
 
-	system("clear");
+	//system("clear");
 	
 	// socket create and verification
 	if((client_socket = socket(AF_UNIX, SOCK_STREAM, 0)) == -1){
@@ -265,12 +279,13 @@ int main(){
 	}
 
 	while(terminazione == 0){
-		;
+		sleep(1);
+		
 	}
 
 	//dico al thread text_service di terminare
 	write(mypipe[1],"EXIT",5);
-
+	
 	pthread_join(tsTh,NULL);
 
 	close(client_socket);

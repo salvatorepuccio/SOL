@@ -39,7 +39,7 @@ int mystrcat(char** target, char* source, int oversize,int log){
 
 	strncat(*target,source,sourceL);
 
-	if(log==1) printf("[*]\tYou called mystrcat(target,source,%d) w/: \
+	if(log==1) printf("\n[*************]\n[*]\tYou called mystrcat(target,source,%d) w/: \
 	\n[*]\ttarget: '%s' [%d] \
 	\n[*]\tsource: '%s'  [%d] \
 	\n[*]\ttarget (new): '%s' [%d]\n",oversize,target_original,targetL,source,sourceL,*target,len);
